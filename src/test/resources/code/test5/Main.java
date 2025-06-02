@@ -8,6 +8,6 @@ public class Main {
 
     public static void main(String[] args) {
         HttpClient5 httpClient = new HttpClient5();
-        httpClient.doRequest(URL +"/test-2", HttpMethod.POST);
+        httpClient.doRequest(URL +"/test-5", HttpMethod.POST);
     }
 }

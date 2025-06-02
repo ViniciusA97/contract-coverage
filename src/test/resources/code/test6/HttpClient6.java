@@ -10,7 +10,7 @@ public class HttpClient6 {
         this.doRequest();
     }
     private void doRequest() {
-        String url = "http://localhost:8080/test-2" ;
+        String url = "http://localhost:8080/test-6" ;
         HttpMethod method = HttpMethod.POST;
         restTemplate.exchange(url, method, null, String.class);
     }

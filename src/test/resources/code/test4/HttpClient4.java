@@ -7,7 +7,7 @@ public class HttpClient4 {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public void post() {
-        this.doRequest("http://localhost:8080/test-2", HttpMethod.POST);
+        this.doRequest("http://localhost:8080/test-4", HttpMethod.POST);
     }
     public void get() {
         this.doRequest("http://localhost:8080", HttpMethod.GET);
