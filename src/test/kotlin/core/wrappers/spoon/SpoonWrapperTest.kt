@@ -12,22 +12,20 @@ class SpoonWrapperTest {
     val codePath = "src/test/resources/code"
 
     @Test
-    fun `1 - should analyze invocations and extract endpoints correctly without call`() {
+    fun `1) Basic Case - should analyze invocations and extract no endpoints when wrapper is not called`() {
         val projectDir = Paths.get("$codePath/test1").toAbsolutePath().toString()
 
         val spoonWrapper = SpoonWrapper(projectDir, RestTemplateClientHelpers())
 
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
         
-        val expectedEndpoints = listOf(
-            Endpoint("", "GET")
-        )
+        val expectedEndpoints = emptyList<Endpoint>()
 
         assertEquals(expectedEndpoints, endpoints)
     }
 
     @Test
-    fun `2 - should analyze invocations and extract endpoints correctly with call in method of same class`() {
+    fun `2) Basic Case - should analyze invocations and extract endpoints correctly with call in method of same class`() {
         val projectDir = Paths.get("$codePath/test2").toAbsolutePath().toString()
 
         val spoonWrapper = SpoonWrapper(projectDir, RestTemplateClientHelpers())
@@ -42,7 +40,7 @@ class SpoonWrapperTest {
     }
 
     @Test
-    fun `3 - should analyze invocations and extract endpoints correctly with call in another class`() {
+    fun `3) Basic Case - should analyze invocations and extract endpoints correctly with call in another class`() {
         val projectDir = Paths.get("$codePath/test3").toAbsolutePath().toString()
 
         val spoonWrapper = SpoonWrapper(projectDir, RestTemplateClientHelpers())
@@ -57,7 +55,7 @@ class SpoonWrapperTest {
     }
 
     @Test
-    fun `4 - should analyze invocations and extract endpoints correctly with multiple calls in the same class`() {
+    fun `4) Basic Case - should analyze invocations and extract endpoints correctly with multiple calls in the same class`() {
         val projectDir = Paths.get("$codePath/test4").toAbsolutePath().toString()
 
         val spoonWrapper = SpoonWrapper(projectDir, RestTemplateClientHelpers())
@@ -74,7 +72,7 @@ class SpoonWrapperTest {
     }
 
     @Test
-    fun `5 - should analyze invocations and extract endpoints correctly in another class with string operation on URL`() {
+    fun `5) String Manipulation - should analyze invocations and extract endpoints correctly in another class with string operation on URL`() {
         val projectDir = Paths.get("$codePath/test5").toAbsolutePath().toString()
 
         val spoonWrapper = SpoonWrapper(projectDir, RestTemplateClientHelpers())
@@ -89,7 +87,7 @@ class SpoonWrapperTest {
     }
 
     @Test
-    fun `6 - should analyze invocations and extract endpoints correctly with the URL in the body of wrapper`() {
+    fun `6) String Manipulation - should analyze invocations and extract endpoints correctly with the URL in the body of wrapper`() {
         val projectDir = Paths.get("$codePath/test6").toAbsolutePath().toString()
 
         val spoonWrapper = SpoonWrapper(projectDir, RestTemplateClientHelpers())
@@ -104,7 +102,7 @@ class SpoonWrapperTest {
     }
 
     @Test
-    fun `7 - should analyze invocations and extract endpoints correctly passing URL as attribute and path variable as parameter`() {
+    fun `7) String Manipulation - should analyze invocations and extract endpoints correctly passing URL as attribute and path variable as parameter`() {
         val projectDir = Paths.get("$codePath/test7").toAbsolutePath().toString()
 
         val spoonWrapper = SpoonWrapper(projectDir, RestTemplateClientHelpers())
@@ -113,6 +111,51 @@ class SpoonWrapperTest {
 
         val expectedEndpoints = listOf(
             Endpoint("/variable/test7", "POST")
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `8) String Manipulation - should analyze invocations and extract endpoints correctly passing URL as attribute and path variable as parameter`() {
+        val projectDir = Paths.get("$codePath/test8").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir, RestTemplateClientHelpers())
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint(path = "/template-style", method = "POST")
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `9) Multiple Wrapper - should analyze invocations and extract endpoints correctly passing URL as attribute and path variable as parameter`() {
+        val projectDir = Paths.get("$codePath/test9").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir, RestTemplateClientHelpers())
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint(path = "/multi-wrapper", method = "POST")
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `10) Parameters - should analyze invocations and extract endpoints correctly passing URL as attribute and path variable as parameter`() {
+        val projectDir = Paths.get("$codePath/test10").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir, RestTemplateClientHelpers())
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint(path = "/local-vars", method = "POST")
         )
 
         assertEquals(expectedEndpoints, endpoints)
