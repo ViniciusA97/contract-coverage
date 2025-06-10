@@ -5,7 +5,7 @@ import org.example.core.services.reports.JsonReportWriter
 import org.example.core.wrappers.spoon.SpoonWrapper
 
 const val projectDir = "/home/vini/IdeaProjects/contract-coverage"
-const val specificFolder = "src/main/resources/code/test4"
+const val specificFolder = "src/main/resources/code/test7"
 
 const val finalPath = "$projectDir/$specificFolder"
 
