@@ -160,4 +160,19 @@ class SpoonWrapperTest {
 
         assertEquals(expectedEndpoints, endpoints)
     }
+
+    @Test
+    fun `11) Parameters - should analyze invocations and extract endpoints correctly without get domain url value`() {
+        val projectDir = Paths.get("$codePath/test11").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir, RestTemplateClientHelpers())
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint(path = "/cars", method = "POST")
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
 }
