@@ -8,31 +8,37 @@ permissions:
   contents: write
 
 jobs:
-  CommitTestJob:
+  signed-commit:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+
     steps:
-      - name: Checkout
+      - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Commit
+      - name: Instala o GPG
+        run: sudo apt-get update && sudo apt-get install -y gnupg
+
+      - name: Importa chave GPG privada
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         run: |
-          echo "${{ secrets.PRIVATE_KEY }}" | gpg --batch --import
-          
-          git config --global user.signingkey D3C18AE868873260
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+
+      - name: Configura git para assinar commits
+        run: |
+          git config --global user.email "vinicius.queiroz@dce.ufpb.br"            # <-- O email usado na geração da chave!
+          git config --global user.name "github-actions[bot]"       # ou outro nome que quiser
           git config --global commit.gpgsign true
+          git config --global user.signingkey D3C18AE868873260              # <-- Substitua pelo seu GPG_ID 
           git config --global gpg.program gpg
-          git config --global user.email "test@test.com"
-          git config --global user.name "github-actions[bot]"
-          
-          
-          echo 'use-agent' >> ~/.gnupg/gpg.conf
-          echo 'allow-loopback-pinentry' >> ~/.gnupg/gpg-agent.conf
-          gpgconf --kill gpg-agent
-          
-          echo "Date: $(date)" >> teste.txt   
-          
-          git add . 
-          git -c gpg.program="gpg" commit -S --gpg-sign=D3C18AE868873260 --no-verify -m "Testing commit"
+
+      - name: Faz alteração de teste
+        run: |
+          echo "linha gerada automaticamente $(date)" >> arquivo_teste.txt
+          git add arquivo_teste.txt
+
+      - name: Commit assinado e push
+        run: |
+          export GPG_TTY=$(tty)
+          git commit -S -m "Commit assinado via GPG no Actions"
           git push
