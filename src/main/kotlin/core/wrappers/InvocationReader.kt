@@ -2,6 +2,6 @@ package org.example.core.wrappers
 
 import org.example.core.entities.Endpoint
 
-interface InvocationWrappers {
+interface InvocationReader {
     fun resolveEndpoints(): List<Endpoint>
 }

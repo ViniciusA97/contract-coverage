@@ -11,7 +11,7 @@ const val finalPath = "$projectDir/$specificFolder"
 
 fun main() {
     val app = ContractCoverageApp(
-        SpoonWrapper(finalPath, RestTemplateClientHelpers()),
+        SpoonWrapper(finalPath),
         JsonReportWriter()
     )
     app.run("")
