@@ -1,0 +1,33 @@
+name: Test
+on:
+  push:
+    branches:
+      - 'feature/*'
+
+permissions:
+  contents: write
+
+jobs:
+  CommitTestJob:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Commit
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          
+          git config --global user.signingkey D3C18AE868873260
+          git config --global commit.gpgsign true
+          git config --global gpg.program gpg
+          git config --global user.email "test@test.com"
+          git config --global user.name "github-actions[bot]"
+          
+          echo "Date: $(date)" >> teste.txt   
+          
+          git add . 
+          git commit -m "Testing commit"
+          git push
