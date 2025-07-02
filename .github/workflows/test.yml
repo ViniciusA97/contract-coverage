@@ -26,8 +26,13 @@ jobs:
           git config --global user.email "test@test.com"
           git config --global user.name "github-actions[bot]"
           
+          
+          echo 'use-agent' >> ~/.gnupg/gpg.conf
+          echo 'allow-loopback-pinentry' >> ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent
+          
           echo "Date: $(date)" >> teste.txt   
           
           git add . 
-          git commit -m "Testing commit"
+          git -c gpg.program="gpg" commit -S --gpg-sign=D3C18AE868873260 --no-verify -m "Testing commit"
           git push
