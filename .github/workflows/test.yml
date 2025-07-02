@@ -18,7 +18,7 @@ jobs:
 
       - name: Commit
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          echo "${{ secrets.PRIVATE_KEY }}" | gpg --batch --import
           
           git config --global user.signingkey D3C18AE868873260
           git config --global commit.gpgsign true
