@@ -18,6 +18,15 @@ jobs:
       - name: Instala o GPG
         run: sudo apt-get update && sudo apt-get install -y gnupg
 
+      - name: Configura o GPG
+        run: |
+          mkdir -p ~/.gnupg
+          echo "use-agent" >> ~/.gnupg/gpg.conf
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent
+          gpgconf --launch gpg-agent
+
       - name: Importa chave GPG privada
         env:
           GPG_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
@@ -39,6 +48,5 @@ jobs:
 
       - name: Commit assinado e push
         run: |
-          export GPG_TTY=$(tty)
           git commit -S -m "Commit assinado via GPG no Actions"
           git push
