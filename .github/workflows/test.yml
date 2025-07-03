@@ -38,7 +38,7 @@ jobs:
           git config --global user.email "vinicius.queiroz@dce.ufpb.br"            # <-- O email usado na geração da chave!
           git config --global user.name "github-actions[bot]"       # ou outro nome que quiser
           git config --global commit.gpgsign true
-          git config --global user.signingkey D3C18AE868873260              # <-- Substitua pelo seu GPG_ID 
+          git config --global user.signingkey 04888180F03CDC5C              # <-- Substitua pelo seu GPG_ID 
           git config --global gpg.program gpg
 
       - name: Faz alteração de teste
