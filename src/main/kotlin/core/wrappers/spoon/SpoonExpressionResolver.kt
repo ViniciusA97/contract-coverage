@@ -1,7 +1,5 @@
 package org.example.core.wrappers.spoon
 
-import org.example.core.utils.urlToPath
-import org.example.core.wrappers.ExpressionResolver
 import spoon.reflect.CtModel
 import spoon.reflect.code.CtBinaryOperator
 import spoon.reflect.code.CtExpression
@@ -15,20 +13,22 @@ import spoon.reflect.declaration.CtElement
 import spoon.reflect.declaration.CtField
 import spoon.reflect.declaration.CtMethod
 import spoon.reflect.declaration.CtParameter
+import spoon.reflect.reference.CtFieldReference
 import spoon.reflect.reference.CtLocalVariableReference
 import spoon.reflect.visitor.Filter
 
-class SpoonExpressionResolver(
-    private val expr: CtExpression<*>,
-    private val params: List<CtParameter<*>>,
-    private val args: List<CtExpression<*>>,
-    private val scopeMethod: CtMethod<*>?,
-    private val model: CtModel
-): ExpressionResolver {
+class SpoonExpressionResolver {
 
-    override fun resolve(): String {
+    fun resolveExpressionWithParams(
+        expr: CtExpression<*>,
+        params: List<CtParameter<*>>,
+        args: List<CtExpression<*>>,
+        scopeMethod: CtMethod<*>?,
+        model: CtModel
+    ): String {
         return when (expr) {
             is CtVariableRead<*> -> {
+                // Substitui parâmetro se for encontrado
                 val index = params.indexOfFirst { it.simpleName == expr.variable.simpleName }
                 if (index >= 0 && index < args.size) {
                     resolveExpression(args[index], scopeMethod, model)
@@ -40,7 +40,7 @@ class SpoonExpressionResolver(
         }
     }
 
-    private fun resolveExpression(expr: CtExpression<*>?, contextMethod: CtMethod<*>?, model: CtModel, context: CtElement? = null,): String {
+    fun resolveExpression(expr: CtExpression<*>?, contextMethod: CtMethod<*>?, model: CtModel, context: CtElement? = null,): String {
         if (expr == null) return "null expression"
 
         return when (expr) {
@@ -77,6 +77,7 @@ class SpoonExpressionResolver(
             is CtVariableRead<*> -> {
                 val varName = expr.variable.simpleName
 
+                // 1. Tenta como variável local
                 val localVar = contextMethod?.getElements<CtLocalVariable<*>>{it is CtLocalVariable<*>}
                     ?.filterIsInstance<CtLocalVariable<*>>()
                     ?.find { it.simpleName == varName }
@@ -85,6 +86,7 @@ class SpoonExpressionResolver(
                     return resolveExpression(localVar.defaultExpression, contextMethod, model)
                 }
 
+                // 2. Tenta resolver como parâmetro (mesmo que nome seja diferente)
                 contextMethod?.parameters?.forEachIndexed { index, param ->
                     // Se o nome da variável lida bate com o nome do parâmetro
                     if (param.simpleName == varName) {
@@ -136,17 +138,20 @@ class SpoonExpressionResolver(
                 val execRef = expr.executable
                 val resolvedArgs = expr.arguments.map { resolveExpression(it, contextMethod, model, context) }
 
-
+                // Tratamento genérico para funções tipo format
                 val firstArg = expr.arguments.firstOrNull()
                 if (firstArg is CtLiteral<*> && firstArg.value is String) {
                     val formatString = firstArg.value as String
                     return try {
+                        // Remove o primeiro argumento (formato) e aplica String.format
                         String.format(formatString, *resolvedArgs.drop(1).toTypedArray())
                     } catch (e: Exception) {
+                        // Se der erro, apenas concatena como fallback
                         resolvedArgs.joinToString("")
                     }
                 }
 
+                // Tentativa de resolução por retorno do método
                 val calledMethod = model.getElements<CtMethod<*>>{it -> it is CtMethod<*>}
                     .filterIsInstance<CtMethod<*>>()
                     .firstOrNull { it.simpleName == execRef.simpleName && it.parameters.size == execRef.parameters.size }
@@ -166,5 +171,24 @@ class SpoonExpressionResolver(
 
             else -> "<expressão não reconhecida>"
         }
+    }
+
+    fun resolveFieldReference(fieldRef: CtFieldReference<*>, model: CtModel): String {
+        val fieldName = fieldRef.simpleName
+        val declaringType = fieldRef.declaringType?.qualifiedName
+
+        val fieldDecl = model.getElements<CtField<*>> { e -> e is CtField<*> }
+            .find { it.simpleName == fieldName && it.declaringType?.qualifiedName == declaringType }
+
+        val defaultExpr = fieldDecl?.defaultExpression
+        if (defaultExpr != null) {
+            return resolveExpression(defaultExpr, null, model)
+        }
+
+        if (declaringType != null) {
+            return fieldName
+        }
+
+        return "<field não resolvido: $declaringType.$fieldName>"
     }
 }

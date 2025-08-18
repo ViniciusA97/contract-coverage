@@ -1,17 +1,13 @@
 package org.example.core.wrappers.spoon
 
 import org.example.core.entities.Endpoint
-import org.example.core.services.clients.ClientHelpers
 import org.example.core.utils.urlToPath
 import org.example.core.wrappers.StaticCodeAnalyzer
 import spoon.Launcher
 import spoon.reflect.CtModel
 import spoon.reflect.code.*
-import spoon.reflect.declaration.CtElement
-import spoon.reflect.declaration.CtField
 import spoon.reflect.declaration.CtMethod
 import spoon.reflect.declaration.CtParameter
-import spoon.reflect.reference.CtLocalVariableReference
 import spoon.reflect.visitor.Filter
 
 data class MethodCallContext(
@@ -24,6 +20,7 @@ class SpoonWrapper(
 ) : StaticCodeAnalyzer {
 
     private val launcher = initLauncher()
+    private val spoonExpressionResolver = SpoonExpressionResolver()
 
     override fun analyzeInvocations(): List<Endpoint> {
         val model = launcher.model
@@ -79,13 +76,13 @@ class SpoonWrapper(
         val scopeMethod = call.getParent(CtMethod::class.java)
 
         val resolvedUrl = call.arguments.getOrNull(0)?.let { arg ->
-            SpoonExpressionResolver(
-                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model).resolve()
+            spoonExpressionResolver.resolveExpressionWithParams(
+                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model)
         } ?: "{unknown}"
 
         val resolvedMethod = call.arguments.getOrNull(1)?.let { arg ->
-            SpoonExpressionResolver(
-                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model).resolve()
+            spoonExpressionResolver.resolveExpressionWithParams(
+                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model)
         } ?: "{unknown}"
 
         return urlToPath(resolvedUrl) to resolvedMethod
@@ -113,15 +110,15 @@ class SpoonWrapper(
             val passedArg = call.arguments[paramIndex]
             val callerMethod = call.getParent(CtMethod::class.java)
 
-            val resolved = SpoonExpressionResolver(
+            val resolvedExpression = spoonExpressionResolver.resolveExpression(
                 expr = passedArg,
                 contextMethod = callerMethod,
                 context = call,
                 model = model
-            ).resolve()
+            )
 
-            if (!resolved.contains("não resolvida")) {
-                return resolved
+            if (!resolvedExpression.contains("não resolvida")) {
+                return resolvedExpression
             }
 
             if (passedArg is CtVariableRead<*>) {
@@ -136,7 +133,7 @@ class SpoonWrapper(
                     ?.find { it.simpleName == varName }
 
                 if (localVar?.defaultExpression != null) {
-                    return resolveExpression(
+                    return spoonExpressionResolver.resolveExpression(
                         expr = localVar.defaultExpression,
                         contextMethod = callerMethod,
                         context = call,
