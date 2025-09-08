@@ -35,7 +35,23 @@ class SpoonWrapper(
         val requestsCalls = mutableListOf<Pair<CtInvocation<*>, MethodCallContext>>()
         val projectCalls = findCallsWithResolvedArgs(model)
 
-        requestsCalls.addAll(getExchangeCallsFromProjectCalls(projectCalls))
+        val exchangeCalls = getExchangeCallsFromProjectCalls(projectCalls)
+        val getCalls = getHttpGetCallsFromProjectCalls(projectCalls)
+        val postCalls = getHttpPostCallsFromProjectCalls(projectCalls)
+        val putCalls = getHttpPutCallsFromProjectCalls(projectCalls)
+        val patchCalls = getHttpPatchCallsFromProjectCalls(projectCalls)
+        val deleteCalls = getHttpDeleteCallsFromProjectCalls(projectCalls)
+
+        exchangeCalls.forEach { (call, context) ->
+            val (url, method) = extractExchangeCalls(call, context, model)
+            endpoints.add(Endpoint(url, method))
+        }
+
+        getCalls.forEach { (call, context) ->
+            val (url, method) = extractGetCalls(call, context, model)
+            endpoints.add(Endpoint(url, method))
+        }
+
 
         requestsCalls.forEach { (call, context) ->
             val (url, method) = resolveArgumentsWithContext(call, context, model)
@@ -44,6 +60,130 @@ class SpoonWrapper(
 
         return endpoints
     }
+
+    fun extractExchangeCalls(call: CtInvocation<*>,
+                             context: MethodCallContext,
+                             model: CtModel
+    ): Pair<String, String> {
+        val method = context.method
+        val parameters = method.parameters
+        val callArgs = context.arguments
+
+        val scopeMethod = call.getParent(CtMethod::class.java)
+
+        val resolvedUrl = call.arguments.getOrNull(0)?.let { arg ->
+            spoonExpressionResolver.resolveExpressionWithParams(
+                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model)
+        } ?: "{unknown}"
+
+        val resolvedMethod = call.arguments.getOrNull(1)?.let { arg ->
+            spoonExpressionResolver.resolveExpressionWithParams(
+                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model)
+        } ?: "{unknown}"
+
+        return urlToPath(resolvedUrl) to resolvedMethod
+    }
+
+    fun extractGetCalls(call: CtInvocation<*>,
+                             context: MethodCallContext,
+                             model: CtModel
+    ): Pair<String, String> {
+        val method = context.method
+        val parameters = method.parameters
+        val callArgs = context.arguments
+
+        val scopeMethod = call.getParent(CtMethod::class.java)
+
+        val resolvedUrl = call.arguments.getOrNull(0)?.let { arg ->
+            spoonExpressionResolver.resolveExpressionWithParams(
+                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model)
+        } ?: "{unknown}"
+
+        val resolvedMethod = "GET"
+
+        return urlToPath(resolvedUrl) to resolvedMethod
+    }
+
+    fun extractPostCalls(call: CtInvocation<*>,
+                        context: MethodCallContext,
+                        model: CtModel
+    ): Pair<String, String> {
+        val method = context.method
+        val parameters = method.parameters
+        val callArgs = context.arguments
+
+        val scopeMethod = call.getParent(CtMethod::class.java)
+
+        val resolvedUrl = call.arguments.getOrNull(0)?.let { arg ->
+            spoonExpressionResolver.resolveExpressionWithParams(
+                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model)
+        } ?: "{unknown}"
+
+        val resolvedMethod = "POST"
+
+        return urlToPath(resolvedUrl) to resolvedMethod
+    }
+
+    fun extractPatchCalls(call: CtInvocation<*>,
+                         context: MethodCallContext,
+                         model: CtModel
+    ): Pair<String, String> {
+        val method = context.method
+        val parameters = method.parameters
+        val callArgs = context.arguments
+
+        val scopeMethod = call.getParent(CtMethod::class.java)
+
+        val resolvedUrl = call.arguments.getOrNull(0)?.let { arg ->
+            spoonExpressionResolver.resolveExpressionWithParams(
+                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model)
+        } ?: "{unknown}"
+
+        val resolvedMethod = "PATCH"
+
+        return urlToPath(resolvedUrl) to resolvedMethod
+    }
+
+    fun extractDeleteCalls(call: CtInvocation<*>,
+                         context: MethodCallContext,
+                         model: CtModel
+    ): Pair<String, String> {
+        val method = context.method
+        val parameters = method.parameters
+        val callArgs = context.arguments
+
+        val scopeMethod = call.getParent(CtMethod::class.java)
+
+        val resolvedUrl = call.arguments.getOrNull(0)?.let { arg ->
+            spoonExpressionResolver.resolveExpressionWithParams(
+                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model)
+        } ?: "{unknown}"
+
+        val resolvedMethod = "DELETE"
+
+        return urlToPath(resolvedUrl) to resolvedMethod
+    }
+
+    fun extractPutCalls(call: CtInvocation<*>,
+                         context: MethodCallContext,
+                         model: CtModel
+    ): Pair<String, String> {
+        val method = context.method
+        val parameters = method.parameters
+        val callArgs = context.arguments
+
+        val scopeMethod = call.getParent(CtMethod::class.java)
+
+        val resolvedUrl = call.arguments.getOrNull(0)?.let { arg ->
+            spoonExpressionResolver.resolveExpressionWithParams(
+                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model)
+        } ?: "{unknown}"
+
+        val resolvedMethod = "PUT"
+
+        return urlToPath(resolvedUrl) to resolvedMethod
+    }
+
 
     fun findCallsWithResolvedArgs(model: CtModel): List<Pair<CtInvocation<*>, MethodCallContext>> {
         val result = mutableListOf<Pair<CtInvocation<*>, MethodCallContext>>()
@@ -68,6 +208,26 @@ class SpoonWrapper(
 
     fun getExchangeCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
         return projectCalls.filter { (call, _) -> isRestTemplateExchange(call) }
+    }
+
+    fun getHttpGetCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
+        return projectCalls.filter { (call, _) -> isRestTemplateGetForEntity(call) }
+    }
+
+    fun getHttpPostCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
+        return projectCalls.filter { (call, _) -> isRestTemplateGetForEntity(call) }
+    }
+
+    fun getHttpPutCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
+        return projectCalls.filter { (call, _) -> isRestTemplateGetForEntity(call) }
+    }
+
+    fun getHttpPatchCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
+        return projectCalls.filter { (call, _) -> isRestTemplateGetForEntity(call) }
+    }
+
+    fun getHttpDeleteCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
+        return projectCalls.filter { (call, _) -> isRestTemplateGetForEntity(call) }
     }
 
     fun resolveArgumentsWithContext(
@@ -96,6 +256,11 @@ class SpoonWrapper(
 
     fun isRestTemplateExchange(call: CtInvocation<*>): Boolean {
         return call.executable.simpleName == "exchange" &&
+                call.target?.type?.qualifiedName == "org.springframework.web.client.RestTemplate"
+    }
+
+    fun isRestTemplateGetForEntity(call: CtInvocation<*>): Boolean {
+        return call.executable.simpleName == "getForEntity" &&
                 call.target?.type?.qualifiedName == "org.springframework.web.client.RestTemplate"
     }
 
