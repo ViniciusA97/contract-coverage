@@ -32,9 +32,12 @@ class SpoonWrapper(
     fun extractEndpoints(model: CtModel): List<Endpoint> {
         val endpoints = mutableListOf<Endpoint>()
 
-        val resolvedCalls = findExchangeCallsWithResolvedArgs(model)
+        val requestsCalls = mutableListOf<Pair<CtInvocation<*>, MethodCallContext>>()
+        val projectCalls = findCallsWithResolvedArgs(model)
 
-        resolvedCalls.forEach { (call, context) ->
+        requestsCalls.addAll(getExchangeCallsFromProjectCalls(projectCalls))
+
+        requestsCalls.forEach { (call, context) ->
             val (url, method) = resolveArgumentsWithContext(call, context, model)
             endpoints.add(Endpoint(url, method))
         }
@@ -42,8 +45,7 @@ class SpoonWrapper(
         return endpoints
     }
 
-
-    fun findExchangeCallsWithResolvedArgs(model: CtModel): List<Pair<CtInvocation<*>, MethodCallContext>> {
+    fun findCallsWithResolvedArgs(model: CtModel): List<Pair<CtInvocation<*>, MethodCallContext>> {
         val result = mutableListOf<Pair<CtInvocation<*>, MethodCallContext>>()
 
         val methodInvocations = model.getElements<CtInvocation<*>> { it is CtInvocation<*> }
@@ -56,12 +58,16 @@ class SpoonWrapper(
             val innerCalls = declaration.body?.getElements<CtInvocation<*>> { it is CtInvocation<*> }
                 ?.filterIsInstance<CtInvocation<*>>() ?: return@forEach
 
-            innerCalls.filter { isRestTemplateExchange(it) }.forEach { exchangeCall ->
+            innerCalls.forEach { exchangeCall ->
                 result.add(exchangeCall to context)
             }
         }
 
         return result
+    }
+
+    fun getExchangeCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
+        return projectCalls.filter { (call, _) -> isRestTemplateExchange(call) }
     }
 
     fun resolveArgumentsWithContext(

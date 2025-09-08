@@ -13,7 +13,6 @@ import spoon.reflect.declaration.CtElement
 import spoon.reflect.declaration.CtField
 import spoon.reflect.declaration.CtMethod
 import spoon.reflect.declaration.CtParameter
-import spoon.reflect.reference.CtFieldReference
 import spoon.reflect.reference.CtLocalVariableReference
 import spoon.reflect.visitor.Filter
 
@@ -171,24 +170,5 @@ class SpoonExpressionResolver {
 
             else -> "<expressão não reconhecida>"
         }
-    }
-
-    fun resolveFieldReference(fieldRef: CtFieldReference<*>, model: CtModel): String {
-        val fieldName = fieldRef.simpleName
-        val declaringType = fieldRef.declaringType?.qualifiedName
-
-        val fieldDecl = model.getElements<CtField<*>> { e -> e is CtField<*> }
-            .find { it.simpleName == fieldName && it.declaringType?.qualifiedName == declaringType }
-
-        val defaultExpr = fieldDecl?.defaultExpression
-        if (defaultExpr != null) {
-            return resolveExpression(defaultExpr, null, model)
-        }
-
-        if (declaringType != null) {
-            return fieldName
-        }
-
-        return "<field não resolvido: $declaringType.$fieldName>"
     }
 }
