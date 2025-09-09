@@ -32,7 +32,7 @@ class SpoonWrapper(
     fun extractEndpoints(model: CtModel): List<Endpoint> {
         val endpoints = mutableListOf<Endpoint>()
 
-        val requestsCalls = mutableListOf<Pair<CtInvocation<*>, MethodCallContext>>()
+        // TODO: Load only RestTemplate calls
         val projectCalls = findCallsWithResolvedArgs(model)
 
         val exchangeCalls = getExchangeCallsFromProjectCalls(projectCalls)
@@ -52,9 +52,23 @@ class SpoonWrapper(
             endpoints.add(Endpoint(url, method))
         }
 
+        postCalls.forEach { (call, context) ->
+            val (url, method) = extractPostCalls(call, context, model)
+            endpoints.add(Endpoint(url, method))
+        }
 
-        requestsCalls.forEach { (call, context) ->
-            val (url, method) = resolveArgumentsWithContext(call, context, model)
+        putCalls.forEach { (call, context) ->
+            val (url, method) = extractPutCalls(call, context, model)
+            endpoints.add(Endpoint(url, method))
+        }
+
+        patchCalls.forEach { (call, context) ->
+            val (url, method) = extractPatchCalls(call, context, model)
+            endpoints.add(Endpoint(url, method))
+        }
+
+        deleteCalls.forEach { (call, context) ->
+            val (url, method) = extractDeleteCalls(call, context, model)
             endpoints.add(Endpoint(url, method))
         }
 
@@ -228,30 +242,6 @@ class SpoonWrapper(
 
     fun getHttpDeleteCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
         return projectCalls.filter { (call, _) -> isRestTemplateGetForEntity(call) }
-    }
-
-    fun resolveArgumentsWithContext(
-        call: CtInvocation<*>,
-        context: MethodCallContext,
-        model: CtModel
-    ): Pair<String, String> {
-        val method = context.method
-        val parameters = method.parameters
-        val callArgs = context.arguments
-
-        val scopeMethod = call.getParent(CtMethod::class.java)
-
-        val resolvedUrl = call.arguments.getOrNull(0)?.let { arg ->
-            spoonExpressionResolver.resolveExpressionWithParams(
-                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model)
-        } ?: "{unknown}"
-
-        val resolvedMethod = call.arguments.getOrNull(1)?.let { arg ->
-            spoonExpressionResolver.resolveExpressionWithParams(
-                expr = arg, params = parameters, args = callArgs, scopeMethod = scopeMethod, model = model)
-        } ?: "{unknown}"
-
-        return urlToPath(resolvedUrl) to resolvedMethod
     }
 
     fun isRestTemplateExchange(call: CtInvocation<*>): Boolean {
