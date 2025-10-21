@@ -72,7 +72,8 @@ class SpoonWrapper(
             endpoints.add(Endpoint(url, method))
         }
 
-        return endpoints
+        // De-duplicar resultados
+        return endpoints.distinctBy { it.path to it.method }
     }
 
     fun extractExchangeCalls(call: CtInvocation<*>,
@@ -202,22 +203,43 @@ class SpoonWrapper(
     fun findCallsWithResolvedArgs(model: CtModel): List<Pair<CtInvocation<*>, MethodCallContext>> {
         val result = mutableListOf<Pair<CtInvocation<*>, MethodCallContext>>()
 
-        val methodInvocations = model.getElements<CtInvocation<*>> { it is CtInvocation<*> }
+        val allInvocations = model.getElements<CtInvocation<*>> { it is CtInvocation<*> }
             .filterIsInstance<CtInvocation<*>>()
 
-        methodInvocations.forEach { topLevelCall ->
-            val declaration = topLevelCall.executable.declaration as? CtMethod<*> ?: return@forEach
-            val context = MethodCallContext(declaration, topLevelCall.arguments)
+        allInvocations.forEach { invocation ->
+            if (!isRestTemplateCall(invocation)) return@forEach
 
-            val innerCalls = declaration.body?.getElements<CtInvocation<*>> { it is CtInvocation<*> }
-                ?.filterIsInstance<CtInvocation<*>>() ?: return@forEach
+            val parentMethod = invocation.getParent(CtMethod::class.java) ?: return@forEach
 
-            innerCalls.forEach { exchangeCall ->
-                result.add(exchangeCall to context)
+            // Para cada chamada ao método que contém o RestTemplate, gerar um contexto com os argumentos do call site
+            val callSites = findMethodCallSites(parentMethod, model)
+
+            if (callSites.isEmpty()) {
+                // Sem call sites: só considerar se for main (evita falsos positivos do teste 1)
+                if (parentMethod.simpleName == "main") {
+                    result.add(invocation to MethodCallContext(parentMethod, emptyList()))
+                }
+            } else {
+                callSites.forEach { site ->
+                    result.add(invocation to MethodCallContext(parentMethod, site.arguments))
+                }
             }
         }
 
         return result
+    }
+
+    private fun methodHasCaller(method: CtMethod<*>, model: CtModel): Boolean =
+        findMethodCallSites(method, model).isNotEmpty()
+
+    private fun findMethodCallSites(method: CtMethod<*>, model: CtModel): List<CtInvocation<*>> {
+        val allInvocations = model.getElements<CtInvocation<*>> { it is CtInvocation<*> }
+            .filterIsInstance<CtInvocation<*>>()
+        return allInvocations.filter { inv ->
+            val decl = inv.executable.declaration as? CtMethod<*>
+            decl?.signature == method.signature &&
+                    decl.declaringType?.qualifiedName == method.declaringType?.qualifiedName
+        }
     }
 
     fun getExchangeCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
@@ -229,19 +251,27 @@ class SpoonWrapper(
     }
 
     fun getHttpPostCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
-        return projectCalls.filter { (call, _) -> isRestTemplateGetForEntity(call) }
+        return projectCalls.filter { (call, _) -> isRestTemplatePostForEntity(call) }
     }
 
     fun getHttpPutCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
-        return projectCalls.filter { (call, _) -> isRestTemplateGetForEntity(call) }
+        return projectCalls.filter { (call, _) -> isRestTemplatePut(call) }
     }
 
     fun getHttpPatchCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
-        return projectCalls.filter { (call, _) -> isRestTemplateGetForEntity(call) }
+        return projectCalls.filter { (call, _) -> isRestTemplatePatch(call) }
     }
 
     fun getHttpDeleteCallsFromProjectCalls(projectCalls: List<Pair<CtInvocation<*>, MethodCallContext>>): List<Pair<CtInvocation<*>, MethodCallContext>> {
-        return projectCalls.filter { (call, _) -> isRestTemplateGetForEntity(call) }
+        return projectCalls.filter { (call, _) -> isRestTemplateDelete(call) }
+    }
+    private fun isRestTemplateCall(call: CtInvocation<*>): Boolean {
+        return isRestTemplateExchange(call) ||
+                isRestTemplateGetForEntity(call) ||
+                isRestTemplatePostForEntity(call) ||
+                isRestTemplatePut(call) ||
+                isRestTemplatePatch(call) ||
+                isRestTemplateDelete(call)
     }
 
     fun isRestTemplateExchange(call: CtInvocation<*>): Boolean {
@@ -254,6 +284,27 @@ class SpoonWrapper(
                 call.target?.type?.qualifiedName == "org.springframework.web.client.RestTemplate"
     }
 
+    fun isRestTemplatePostForEntity(call: CtInvocation<*>): Boolean {
+        return call.executable.simpleName == "postForEntity" &&
+                call.target?.type?.qualifiedName == "org.springframework.web.client.RestTemplate"
+    }
+
+    fun isRestTemplatePut(call: CtInvocation<*>): Boolean {
+        return call.executable.simpleName == "put" &&
+                call.target?.type?.qualifiedName == "org.springframework.web.client.RestTemplate"
+    }
+
+    fun isRestTemplatePatch(call: CtInvocation<*>): Boolean {
+        // suportar variantes conhecidas
+        val name = call.executable.simpleName
+        return (name == "patchForObject" || name == "patchForEntity" || name == "patch") &&
+                call.target?.type?.qualifiedName == "org.springframework.web.client.RestTemplate"
+    }
+
+    fun isRestTemplateDelete(call: CtInvocation<*>): Boolean {
+        return call.executable.simpleName == "delete" &&
+                call.target?.type?.qualifiedName == "org.springframework.web.client.RestTemplate"
+    }
     private fun findValueFromCaller(
         targetMethod: CtMethod<*>,
         param: CtParameter<*>,
