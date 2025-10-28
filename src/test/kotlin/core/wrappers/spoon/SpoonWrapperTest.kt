@@ -1,6 +1,7 @@
 package core.wrappers.spoon
 
 import org.example.core.entities.Endpoint
+import org.example.core.entities.HttpMethod
 import org.example.core.wrappers.spoon.SpoonWrapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -38,7 +39,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-2", "POST")
+            Endpoint("/test-2", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -53,7 +54,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-3", "POST")
+            Endpoint("/test-3", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -68,9 +69,9 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-4", "POST"),
-            Endpoint("", "GET"),
-            Endpoint("", "PUT")
+            Endpoint("/test-4", HttpMethod.POST),
+            Endpoint("", HttpMethod.GET),
+            Endpoint("", HttpMethod.PUT)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -85,7 +86,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-5", "POST")
+            Endpoint("/test-5", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -100,7 +101,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-6", "POST")
+            Endpoint("/test-6", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -115,7 +116,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/variable/test7", "POST")
+            Endpoint("/variable/test7", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -130,7 +131,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint(path = "/template-style", method = "POST")
+            Endpoint(path = "/template-style", method = HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -145,7 +146,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint(path = "/multi-wrapper", method = "POST")
+            Endpoint(path = "/multi-wrapper", method = HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -160,7 +161,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint(path = "/local-vars", method = "POST")
+            Endpoint(path = "/local-vars", method = HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -175,7 +176,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint(path = "/cars", method = "POST")
+            Endpoint(path = "/cars", method = HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -204,7 +205,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-2", "GET")
+            Endpoint("/test-2", HttpMethod.GET)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -219,7 +220,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-3", "GET")
+            Endpoint("/test-3", HttpMethod.GET)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -234,7 +235,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-4", "GET")
+            Endpoint("/test-4", HttpMethod.GET)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -249,7 +250,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-5", "GET")
+            Endpoint("/test-5", HttpMethod.GET)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -264,7 +265,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-6", "GET")
+            Endpoint("/test-6", HttpMethod.GET)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -279,7 +280,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/variable/test7", "GET")
+            Endpoint("/variable/test7", HttpMethod.GET)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -308,7 +309,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-2", "POST")
+            Endpoint("/test-2", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -323,7 +324,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-3", "POST")
+            Endpoint("/test-3", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -338,7 +339,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-4", "POST")
+            Endpoint("/test-4", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -353,7 +354,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-5", "POST")
+            Endpoint("/test-5", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -368,7 +369,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-6", "POST")
+            Endpoint("/test-6", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -383,7 +384,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/variable/test7", "POST")
+            Endpoint("/variable/test7", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -412,7 +413,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-2", "PUT")
+            Endpoint("/test-2", HttpMethod.PUT)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -427,7 +428,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-3", "PUT")
+            Endpoint("/test-3", HttpMethod.PUT)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -442,7 +443,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-4", "PUT")
+            Endpoint("/test-4", HttpMethod.PUT)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -457,7 +458,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-5", "PUT")
+            Endpoint("/test-5", HttpMethod.PUT)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -472,7 +473,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-6", "PUT")
+            Endpoint("/test-6", HttpMethod.PUT)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -487,7 +488,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/variable/test7", "PUT")
+            Endpoint("/variable/test7", HttpMethod.PUT)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -516,7 +517,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-2", "PATCH")
+            Endpoint("/test-2", HttpMethod.PATCH)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -531,7 +532,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-3", "PATCH")
+            Endpoint("/test-3", HttpMethod.PATCH)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -546,7 +547,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-4", "PATCH")
+            Endpoint("/test-4", HttpMethod.PATCH)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -561,7 +562,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-5", "PATCH")
+            Endpoint("/test-5", HttpMethod.PATCH)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -576,7 +577,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-6", "PATCH")
+            Endpoint("/test-6", HttpMethod.PATCH)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -591,7 +592,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/variable/test7", "PATCH")
+            Endpoint("/variable/test7", HttpMethod.PATCH)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -620,7 +621,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-2", "DELETE")
+            Endpoint("/test-2", HttpMethod.DELETE)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -635,7 +636,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-3", "DELETE")
+            Endpoint("/test-3", HttpMethod.DELETE)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -650,7 +651,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-4", "DELETE")
+            Endpoint("/test-4", HttpMethod.DELETE)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -665,7 +666,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-5", "DELETE")
+            Endpoint("/test-5", HttpMethod.DELETE)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -680,7 +681,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/test-6", "DELETE")
+            Endpoint("/test-6", HttpMethod.DELETE)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -695,7 +696,7 @@ class SpoonWrapperTest {
         val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
 
         val expectedEndpoints = listOf(
-            Endpoint("/variable/test7", "DELETE")
+            Endpoint("/variable/test7", HttpMethod.DELETE)
         )
 
         assertEquals(expectedEndpoints, endpoints)
