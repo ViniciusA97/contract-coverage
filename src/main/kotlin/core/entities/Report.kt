@@ -6,4 +6,8 @@ class Report {
     fun registerEndpoint(endpoint: Endpoint) {
         endpoints.add(endpoint)
     }
+    
+    fun getEndpoints(): List<Endpoint> = endpoints.toList()
+    
+    fun getEndpointCount(): Int = endpoints.size
 }
