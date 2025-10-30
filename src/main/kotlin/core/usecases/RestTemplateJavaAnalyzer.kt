@@ -9,6 +9,12 @@ class RestTemplateJavaAnalyzer(
 
     fun process(): Report {
         val endpointsList = analyzer.analyzeInvocations()
-        return Report()
+        val report = Report()
+        
+        endpointsList.forEach { endpoint ->
+            report.registerEndpoint(endpoint)
+        }
+        
+        return report
     }
 }

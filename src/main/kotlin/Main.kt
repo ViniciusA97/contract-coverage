@@ -1,11 +1,10 @@
 package org.example
 
-import org.example.core.services.clients.RestTemplateClientHelpers
 import org.example.core.services.reports.JsonReportWriter
 import org.example.core.wrappers.spoon.SpoonWrapper
 
 const val projectDir = "/home/vini/IdeaProjects/contract-coverage"
-const val specificFolder = "src/main/resources/code/test7"
+const val specificFolder = "src/test/resources/code/delete/test2"
 
 const val finalPath = "$projectDir/$specificFolder"
 
@@ -14,5 +13,5 @@ fun main() {
         SpoonWrapper(finalPath),
         JsonReportWriter()
     )
-    app.run("")
+    app.run("./reports/report.json")
 }

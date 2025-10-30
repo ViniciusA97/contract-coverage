@@ -1,0 +1,8 @@
+{
+  "timestamp" : "2025-10-30T07:30:56.708244466",
+  "totalEndpoints" : 1,
+  "endpoints" : [ {
+    "path" : "/test-2",
+    "method" : "DELETE"
+  } ]
+}

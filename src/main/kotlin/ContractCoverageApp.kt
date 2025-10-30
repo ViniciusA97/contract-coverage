@@ -11,6 +11,6 @@ class ContractCoverageApp(
     fun run(reportOutput: String) {
         val useCase = RestTemplateJavaAnalyzer(analyzer)
         val report = useCase.process()
-        //reportWriter.writeReport(report, reportOutput)
+        reportWriter.writeReport(report, reportOutput)
     }
 }
