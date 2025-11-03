@@ -13,5 +13,6 @@ fun main() {
         SpoonWrapper(finalPath),
         JsonReportWriter()
     )
-    app.run("./reports/report.json")
+    val pactPath = "$projectDir/src/main/resources/pact/pact_example_1.json"
+    app.run("./reports/report.json", pactPath)
 }

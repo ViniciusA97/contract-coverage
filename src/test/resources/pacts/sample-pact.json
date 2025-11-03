@@ -1,0 +1,30 @@
+{
+  "consumer": { "name": "sample-consumer" },
+  "provider": { "name": "sample-provider" },
+  "interactions": [
+    {
+      "description": "get users",
+      "providerState": "users exist",
+      "request": {
+        "method": "GET",
+        "path": "/api/users"
+      },
+      "response": {
+        "status": 200,
+        "body": []
+      }
+    },
+    {
+      "description": "create user",
+      "request": {
+        "method": "POST",
+        "path": "/api/users"
+      },
+      "response": {
+        "status": 201
+      }
+    }
+  ]
+}
+
+

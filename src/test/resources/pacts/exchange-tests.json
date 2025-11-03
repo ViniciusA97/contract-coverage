@@ -1,0 +1,48 @@
+{
+  "consumer": { "name": "contract-coverage-tests" },
+  "provider": { "name": "exchange-provider" },
+  "interactions": [
+    {
+      "description": "POST /test-2",
+      "request": { "method": "POST", "path": "/test-2" },
+      "response": { "status": 200 }
+    },
+    {
+      "description": "POST /test-3",
+      "request": { "method": "POST", "path": "/test-3" },
+      "response": { "status": 200 }
+    },
+    {
+      "description": "POST /test-4 and GET/PUT anonymous paths",
+      "request": { "method": "POST", "path": "/test-4" },
+      "response": { "status": 200 }
+    },
+    {
+      "description": "POST /template-style",
+      "request": { "method": "POST", "path": "/template-style" },
+      "response": { "status": 200 }
+    },
+    {
+      "description": "POST /multi-wrapper",
+      "request": { "method": "POST", "path": "/multi-wrapper" },
+      "response": { "status": 200 }
+    },
+    {
+      "description": "POST /local-vars",
+      "request": { "method": "POST", "path": "/local-vars" },
+      "response": { "status": 200 }
+    },
+    {
+      "description": "POST /cars (domain ignored)",
+      "request": { "method": "POST", "path": "/cars" },
+      "response": { "status": 200 }
+    },
+    {
+      "description": "POST /variable/test7",
+      "request": { "method": "POST", "path": "/variable/test7" },
+      "response": { "status": 200 }
+    }
+  ]
+}
+
+
