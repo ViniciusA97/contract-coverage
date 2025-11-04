@@ -1,0 +1,14 @@
+{
+  "consumer": { "name": "contract-coverage-tests" },
+  "provider": { "name": "post-provider" },
+  "interactions": [
+    { "description": "POST /test-2", "request": { "method": "POST", "path": "/test-2" }, "response": { "status": 200 } },
+    { "description": "POST /test-3", "request": { "method": "POST", "path": "/test-3" }, "response": { "status": 200 } },
+    { "description": "POST /test-4", "request": { "method": "POST", "path": "/test-4" }, "response": { "status": 200 } },
+    { "description": "POST /test-5", "request": { "method": "POST", "path": "/test-5" }, "response": { "status": 200 } },
+    { "description": "POST /test-6", "request": { "method": "POST", "path": "/test-6" }, "response": { "status": 200 } },
+    { "description": "POST /variable/test7", "request": { "method": "POST", "path": "/variable/test7" }, "response": { "status": 200 } }
+  ]
+}
+
+

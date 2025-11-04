@@ -1,0 +1,14 @@
+{
+  "consumer": { "name": "contract-coverage-tests" },
+  "provider": { "name": "patch-provider" },
+  "interactions": [
+    { "description": "PATCH /test-2", "request": { "method": "PATCH", "path": "/test-2" }, "response": { "status": 200 } },
+    { "description": "PATCH /test-3", "request": { "method": "PATCH", "path": "/test-3" }, "response": { "status": 200 } },
+    { "description": "PATCH /test-4", "request": { "method": "PATCH", "path": "/test-4" }, "response": { "status": 200 } },
+    { "description": "PATCH /test-5", "request": { "method": "PATCH", "path": "/test-5" }, "response": { "status": 200 } },
+    { "description": "PATCH /test-6", "request": { "method": "PATCH", "path": "/test-6" }, "response": { "status": 200 } },
+    { "description": "PATCH /variable/test7", "request": { "method": "PATCH", "path": "/variable/test7" }, "response": { "status": 200 } }
+  ]
+}
+
+

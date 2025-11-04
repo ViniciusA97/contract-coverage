@@ -1,0 +1,14 @@
+{
+  "consumer": { "name": "contract-coverage-tests" },
+  "provider": { "name": "delete-provider" },
+  "interactions": [
+    { "description": "DELETE /test-2", "request": { "method": "DELETE", "path": "/test-2" }, "response": { "status": 200 } },
+    { "description": "DELETE /test-3", "request": { "method": "DELETE", "path": "/test-3" }, "response": { "status": 200 } },
+    { "description": "DELETE /test-4", "request": { "method": "DELETE", "path": "/test-4" }, "response": { "status": 200 } },
+    { "description": "DELETE /test-5", "request": { "method": "DELETE", "path": "/test-5" }, "response": { "status": 200 } },
+    { "description": "DELETE /test-6", "request": { "method": "DELETE", "path": "/test-6" }, "response": { "status": 200 } },
+    { "description": "DELETE /variable/test7", "request": { "method": "DELETE", "path": "/variable/test7" }, "response": { "status": 200 } }
+  ]
+}
+
+

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import org.example.core.entities.EndpointData
+import org.example.core.entities.Coverage
+import org.example.core.entities.CoverageData
 import org.example.core.entities.Report
 import org.example.core.entities.ReportData
 import java.io.File
@@ -23,6 +25,15 @@ class JsonReportWriter : ReportWriter {
                 EndpointData(
                     path = endpoint.path,
                     method = endpoint.method.value
+                )
+            },
+            coverage = report.getCoverage()?.let { cov ->
+                CoverageData(
+                    totalCodeEndpoints = cov.totalCodeEndpoints,
+                    matchedByPact = cov.matchedByPact,
+                    coveragePercent = cov.coveragePercent,
+                    missingEndpoints = cov.missingEndpoints.map { EndpointData(it.path, it.method.value) },
+                    matchedEndpoints = cov.matchedEndpoints.map { EndpointData(it.path, it.method.value) }
                 )
             }
         )

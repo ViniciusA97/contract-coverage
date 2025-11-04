@@ -1,8 +1,18 @@
 {
-  "timestamp" : "2025-10-30T07:30:56.708244466",
+  "timestamp" : "2025-11-03T07:07:04.484778709",
   "totalEndpoints" : 1,
   "endpoints" : [ {
     "path" : "/test-2",
     "method" : "DELETE"
-  } ]
+  } ],
+  "coverage" : {
+    "totalCodeEndpoints" : 1,
+    "matchedByPact" : 0,
+    "coveragePercent" : 0.0,
+    "missingEndpoints" : [ {
+      "path" : "/test-2",
+      "method" : "DELETE"
+    } ],
+    "matchedEndpoints" : [ ]
+  }
 }

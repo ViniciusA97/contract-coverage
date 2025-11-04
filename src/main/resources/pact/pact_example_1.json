@@ -1,0 +1,92 @@
+{
+  "consumer": {
+    "name": "contract-coverage-tests"
+  },
+  "provider": {
+    "name": "exchange-provider"
+  },
+  "interactions": [
+    {
+      "type": "Synchronous/HTTP",
+      "description": "GET request to retrieve default values",
+      "key": "163f8e0",
+      "request": {
+        "method": "GET",
+        "path": "/api/test/8",
+        "matchingRules": {
+          "path": {
+            "matchers": [
+              {
+                "match": "regex",
+                "regex": "/api/test/\\d{1,8}"
+              }
+            ],
+            "combine": "AND"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "contentType": "application/json",
+          "encoded": false,
+          "content": [
+            {
+              "size": 1445211,
+              "name": "testId254",
+              "id": 32432
+            }
+          ]
+        },
+        "matchingRules": {
+          "body": {
+            "$": {
+              "matchers": [
+                {
+                  "match": "type",
+                  "min": 1
+                }
+              ],
+              "combine": "AND"
+            },
+            "$[*].id": {
+              "matchers": [
+                {
+                  "match": "number"
+                }
+              ],
+              "combine": "AND"
+            },
+            "$[*].name": {
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ],
+              "combine": "AND"
+            },
+            "$[*].size": {
+              "matchers": [
+                {
+                  "match": "number"
+                }
+              ],
+              "combine": "AND"
+            }
+          }
+        }
+      },
+      "providerStates": [
+        {
+          "name": "a default value exists",
+          "params": {
+            "id": "32432"
+          }
+        }
+      ]
+    }
+  ]
+}
