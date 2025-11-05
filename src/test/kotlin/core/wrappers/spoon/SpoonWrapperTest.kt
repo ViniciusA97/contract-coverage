@@ -12,9 +12,11 @@ class SpoonWrapperTest {
     val codePath = "src/test/resources/code/"
     val exchangePath = codePath.plus("exchange")
     val getPath = codePath.plus("get")
+    val getForObjectPath = codePath.plus("getForObject")
     val deletePath = codePath.plus("delete")
     val patchPath = codePath.plus("patch")
     val postPath = codePath.plus("post")
+    val postForObjectPath = codePath.plus("postForObject")
     val putPath = codePath.plus("put")
 
     @Test
@@ -697,6 +699,214 @@ class SpoonWrapperTest {
 
         val expectedEndpoints = listOf(
             Endpoint("/variable/test7", HttpMethod.DELETE)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    // GET FOR OBJECT Tests
+    @Test
+    fun `GET FOR OBJECT 1) Basic Case - should analyze invocations and extract no endpoints when wrapper is not called`() {
+        val projectDir = Paths.get("$getForObjectPath/test1").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+        
+        val expectedEndpoints = emptyList<Endpoint>()
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `GET FOR OBJECT 2) Basic Case - should analyze invocations and extract endpoints correctly with call in method of same class`() {
+        val projectDir = Paths.get("$getForObjectPath/test2").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/test-2", HttpMethod.GET)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `GET FOR OBJECT 3) Basic Case - should analyze invocations and extract endpoints correctly with call in another class`() {
+        val projectDir = Paths.get("$getForObjectPath/test3").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/test-3", HttpMethod.GET)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `GET FOR OBJECT 4) Basic Case - should analyze invocations and extract endpoints correctly with multiple calls in the same class`() {
+        val projectDir = Paths.get("$getForObjectPath/test4").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/test-4", HttpMethod.GET)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `GET FOR OBJECT 5) String Manipulation - should analyze invocations and extract endpoints correctly in another class with string operation on URL`() {
+        val projectDir = Paths.get("$getForObjectPath/test5").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/test-5", HttpMethod.GET)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `GET FOR OBJECT 6) String Manipulation - should analyze invocations and extract endpoints correctly with the URL in the body of wrapper`() {
+        val projectDir = Paths.get("$getForObjectPath/test6").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/test-6", HttpMethod.GET)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `GET FOR OBJECT 7) String Manipulation - should analyze invocations and extract endpoints correctly passing URL as attribute and path variable as parameter`() {
+        val projectDir = Paths.get("$getForObjectPath/test7").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/variable/test7", HttpMethod.GET)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    // POST FOR OBJECT Tests
+    @Test
+    fun `POST FOR OBJECT 1) Basic Case - should analyze invocations and extract no endpoints when wrapper is not called`() {
+        val projectDir = Paths.get("$postForObjectPath/test1").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+        
+        val expectedEndpoints = emptyList<Endpoint>()
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `POST FOR OBJECT 2) Basic Case - should analyze invocations and extract endpoints correctly with call in method of same class`() {
+        val projectDir = Paths.get("$postForObjectPath/test2").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/test-2", HttpMethod.POST)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `POST FOR OBJECT 3) Basic Case - should analyze invocations and extract endpoints correctly with call in another class`() {
+        val projectDir = Paths.get("$postForObjectPath/test3").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/test-3", HttpMethod.POST)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `POST FOR OBJECT 4) Basic Case - should analyze invocations and extract endpoints correctly with multiple calls in the same class`() {
+        val projectDir = Paths.get("$postForObjectPath/test4").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/test-4", HttpMethod.POST)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `POST FOR OBJECT 5) String Manipulation - should analyze invocations and extract endpoints correctly in another class with string operation on URL`() {
+        val projectDir = Paths.get("$postForObjectPath/test5").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/test-5", HttpMethod.POST)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `POST FOR OBJECT 6) String Manipulation - should analyze invocations and extract endpoints correctly with the URL in the body of wrapper`() {
+        val projectDir = Paths.get("$postForObjectPath/test6").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/test-6", HttpMethod.POST)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `POST FOR OBJECT 7) String Manipulation - should analyze invocations and extract endpoints correctly passing URL as attribute and path variable as parameter`() {
+        val projectDir = Paths.get("$postForObjectPath/test7").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        val expectedEndpoints = listOf(
+            Endpoint("/variable/test7", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)

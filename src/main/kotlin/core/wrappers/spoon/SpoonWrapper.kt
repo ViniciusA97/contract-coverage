@@ -26,7 +26,9 @@ class SpoonWrapper(
     private val extractors: List<CallExtractor> = listOf(
         ExchangeCallExtractor(classifier, spoonExpressionResolver),
         SimpleMethodCallExtractor({ c, call -> c.isRestTemplateGetForEntity(call) }, HttpMethod.GET, classifier, spoonExpressionResolver),
+        SimpleMethodCallExtractor({ c, call -> c.isRestTemplateGetForObject(call) }, HttpMethod.GET, classifier, spoonExpressionResolver),
         SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePostForEntity(call) }, HttpMethod.POST, classifier, spoonExpressionResolver),
+        SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePostForObject(call) }, HttpMethod.POST, classifier, spoonExpressionResolver),
         SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePut(call) }, HttpMethod.PUT, classifier, spoonExpressionResolver),
         SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePatch(call) }, HttpMethod.PATCH, classifier, spoonExpressionResolver),
         SimpleMethodCallExtractor({ c, call -> c.isRestTemplateDelete(call) }, HttpMethod.DELETE, classifier, spoonExpressionResolver),
@@ -89,8 +91,30 @@ class SpoonWrapper(
 
     private fun initLauncher(): Launcher {
         val launcher = Launcher()
-        launcher.addInputResource(projectDir)
+        val file = java.io.File(projectDir)
+        
+        if (file.isDirectory) {
+            // Se for um diretório, adiciona recursivamente todos os arquivos Java
+            val javaFiles = file.walkTopDown()
+                .filter { it.isFile && it.extension == "java" }
+                .toList()
+            
+            println("Found ${javaFiles.size} Java files in $projectDir")
+            javaFiles.forEach { javaFile ->
+                launcher.addInputResource(javaFile.absolutePath)
+            }
+        } else if (file.isFile && file.extension == "java") {
+            // Se for um arquivo Java específico
+            println("Processing single Java file: $projectDir")
+            launcher.addInputResource(projectDir)
+        } else {
+            // Fallback: adiciona como está
+            println("Adding input resource as-is: $projectDir")
+            launcher.addInputResource(projectDir)
+        }
+        
         launcher.buildModel()
+        println("Spoon model built. Total types: ${launcher.model.allTypes.size}")
         return launcher
     }
 }
