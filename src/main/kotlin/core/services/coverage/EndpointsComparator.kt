@@ -11,19 +11,21 @@ class EndpointsComparator {
 
         val matched = mutableListOf<Endpoint>()
         val missing = mutableListOf<Endpoint>()
-        
+
         for (codeEndpoint in codeSet) {
             val found = pactSet.find { pactEndpoint ->
-                pactEndpoint.method == codeEndpoint.method && 
+                pactEndpoint.method == codeEndpoint.method &&
                 pathsMatch(codeEndpoint.path, pactEndpoint.path)
             }
-            
+
             if (found != null) {
                 matched.add(codeEndpoint)
             } else {
                 missing.add(codeEndpoint)
             }
         }
+        val matched = codeSet.intersect(pactSet)
+        val missing = codeSet.minus(pactSet)
 
         val total = codeSet.size
         val matchedCount = matched.size
@@ -36,9 +38,11 @@ class EndpointsComparator {
             coveragePercent = coverageRounded,
             missingEndpoints = missing,
             matchedEndpoints = matched
+            missingEndpoints = missing.toList(),
+            matchedEndpoints = matched.toList()
         )
     }
-    
+
     /**
      * Checks if two paths match, considering path variables.
      * Examples:
@@ -49,25 +53,25 @@ class EndpointsComparator {
     private fun pathsMatch(codePath: String, pactPath: String): Boolean {
         // Exact match
         if (codePath == pactPath) return true
-        
+
         // Normalize paths by splitting into segments
         val codeSegments = codePath.split('/').filter { it.isNotEmpty() }
         val pactSegments = pactPath.split('/').filter { it.isNotEmpty() }
-        
+
         // Must have same number of segments
         if (codeSegments.size != pactSegments.size) return false
-        
+
         // Compare each segment
         for (i in codeSegments.indices) {
             val codeSegment = codeSegments[i]
             val pactSegment = pactSegments[i]
-            
+
             // If code segment is a path variable (e.g., {id}), it matches any value
             if (codeSegment.startsWith("{") && codeSegment.endsWith("}")) {
                 // Path variable matches any value
                 continue
             }
-            
+
             // If pact segment looks like a path variable but code doesn't, no match
             // (This handles the case where Pact has {id} but code has a specific value)
             if (pactSegment.startsWith("{") && pactSegment.endsWith("}")) {
@@ -77,13 +81,13 @@ class EndpointsComparator {
                 }
                 continue
             }
-            
+
             // Both are literals - must match exactly
             if (codeSegment != pactSegment) {
                 return false
             }
         }
-        
+
         return true
     }
 }
