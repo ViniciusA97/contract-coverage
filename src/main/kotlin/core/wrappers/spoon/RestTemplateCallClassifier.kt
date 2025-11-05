@@ -7,7 +7,9 @@ class RestTemplateCallClassifier {
     fun isRestTemplateCall(call: CtInvocation<*>): Boolean {
         return isRestTemplateExchange(call) ||
                 isRestTemplateGetForEntity(call) ||
+                isRestTemplateGetForObject(call) ||
                 isRestTemplatePostForEntity(call) ||
+                isRestTemplatePostForObject(call) ||
                 isRestTemplatePut(call) ||
                 isRestTemplatePatch(call) ||
                 isRestTemplateDelete(call)
@@ -23,8 +25,18 @@ class RestTemplateCallClassifier {
                 call.target?.type?.qualifiedName == "org.springframework.web.client.RestTemplate"
     }
 
+    fun isRestTemplateGetForObject(call: CtInvocation<*>): Boolean {
+        return call.executable.simpleName == "getForObject" &&
+                call.target?.type?.qualifiedName == "org.springframework.web.client.RestTemplate"
+    }
+
     fun isRestTemplatePostForEntity(call: CtInvocation<*>): Boolean {
         return call.executable.simpleName == "postForEntity" &&
+                call.target?.type?.qualifiedName == "org.springframework.web.client.RestTemplate"
+    }
+
+    fun isRestTemplatePostForObject(call: CtInvocation<*>): Boolean {
+        return call.executable.simpleName == "postForObject" &&
                 call.target?.type?.qualifiedName == "org.springframework.web.client.RestTemplate"
     }
 

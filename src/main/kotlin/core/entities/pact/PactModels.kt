@@ -23,8 +23,15 @@ data class Provider(
 data class Interaction(
     val description: String? = null,
     val providerState: String? = null,
+    val providerStates: List<ProviderState>? = null,
     val request: Request = Request(),
     val response: Response = Response()
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class ProviderState(
+    val name: String? = null,
+    val params: Map<String, Any>? = null
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

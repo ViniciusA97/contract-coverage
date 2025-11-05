@@ -1,18 +1,30 @@
 {
-  "timestamp" : "2025-11-03T07:07:04.484778709",
-  "totalEndpoints" : 1,
-  "endpoints" : [ {
-    "path" : "/test-2",
-    "method" : "DELETE"
-  } ],
-  "coverage" : {
-    "totalCodeEndpoints" : 1,
-    "matchedByPact" : 0,
-    "coveragePercent" : 0.0,
-    "missingEndpoints" : [ {
-      "path" : "/test-2",
-      "method" : "DELETE"
-    } ],
-    "matchedEndpoints" : [ ]
+  "timestamp": "2025-11-05T06:41:18.295126502",
+  "totalEndpoints": 2,
+  "endpoints": [
+    {
+      "path": "/users/{id}",
+      "method": "GET"
+    },
+    {
+      "path": "/users",
+      "method": "POST"
+    }
+  ],
+  "coverage": {
+    "totalCodeEndpoints": 2,
+    "matchedByPact": 2,
+    "coveragePercent": 100.0,
+    "missingEndpoints": [],
+    "matchedEndpoints": [
+      {
+        "path": "/users/{id}",
+        "method": "GET"
+      },
+      {
+        "path": "/users",
+        "method": "POST"
+      }
+    ]
   }
 }
