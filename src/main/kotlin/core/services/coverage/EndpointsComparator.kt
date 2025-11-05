@@ -24,8 +24,6 @@ class EndpointsComparator {
                 missing.add(codeEndpoint)
             }
         }
-        val matched = codeSet.intersect(pactSet)
-        val missing = codeSet.minus(pactSet)
 
         val total = codeSet.size
         val matchedCount = matched.size
@@ -38,8 +36,6 @@ class EndpointsComparator {
             coveragePercent = coverageRounded,
             missingEndpoints = missing,
             matchedEndpoints = matched
-            missingEndpoints = missing.toList(),
-            matchedEndpoints = matched.toList()
         )
     }
 
