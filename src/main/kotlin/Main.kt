@@ -1,9 +1,20 @@
 package org.example
 
-import org.example.cli.ContractCoverageCommand
+import org.example.infraestructure.interfaces.ContractCoverageCommand
 import picocli.CommandLine
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
-    val exitCode = CommandLine(ContractCoverageCommand()).execute(*args)
-    System.exit(exitCode)
+    try {
+        val command = ContractCoverageCommand()
+        val commandLine = CommandLine(command)
+        commandLine.isUnmatchedArgumentsAllowed = false
+        commandLine.isStopAtUnmatched = false
+        val exitCode = commandLine.execute(*args)
+        exitProcess(exitCode)
+    } catch (e: Exception) {
+        System.err.println("Fatal error: ${e.message}")
+        e.printStackTrace()
+        exitProcess(1)
+    }
 }

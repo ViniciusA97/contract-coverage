@@ -6,6 +6,12 @@
       },
       {
         "pattern": ".*\\.properties$"
+      },
+      {
+        "pattern": "org/eclipse/jdt/.*"
+      },
+      {
+        "pattern": "org/eclipse/.*"
       }
     ]
   }

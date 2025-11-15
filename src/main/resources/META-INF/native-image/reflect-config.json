@@ -1,6 +1,6 @@
 [
   {
-    "name": "org.example.cli.ContractCoverageCommand",
+    "name": "org.example.infraestructure.interfaces.ContractCoverageCommand",
     "allDeclaredConstructors": true,
     "allPublicConstructors": true,
     "allDeclaredMethods": true,

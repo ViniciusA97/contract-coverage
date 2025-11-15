@@ -90,31 +90,75 @@ class SpoonWrapper(
     }
 
     private fun initLauncher(): Launcher {
-        val launcher = Launcher()
-        val file = java.io.File(projectDir)
-        
-        if (file.isDirectory) {
-            // Se for um diretório, adiciona recursivamente todos os arquivos Java
-            val javaFiles = file.walkTopDown()
-                .filter { it.isFile && it.extension == "java" }
-                .toList()
+        try {
+            val launcher = Launcher()
+            val file = java.io.File(projectDir)
             
-            println("Found ${javaFiles.size} Java files in $projectDir")
-            javaFiles.forEach { javaFile ->
-                launcher.addInputResource(javaFile.absolutePath)
+            if (file.isDirectory) {
+                // Se for um diretório, adiciona recursivamente todos os arquivos Java
+                val javaFiles = file.walkTopDown()
+                    .filter { it.isFile && it.extension == "java" }
+                    .toList()
+                
+                println("Found ${javaFiles.size} Java files in $projectDir")
+                javaFiles.forEach { javaFile ->
+                    launcher.addInputResource(javaFile.absolutePath)
+                }
+            } else if (file.isFile && file.extension == "java") {
+                // Se for um arquivo Java específico
+                println("Processing single Java file: $projectDir")
+                launcher.addInputResource(projectDir)
+            } else {
+                // Fallback: adiciona como está
+                println("Adding input resource as-is: $projectDir")
+                launcher.addInputResource(projectDir)
             }
-        } else if (file.isFile && file.extension == "java") {
-            // Se for um arquivo Java específico
-            println("Processing single Java file: $projectDir")
-            launcher.addInputResource(projectDir)
-        } else {
-            // Fallback: adiciona como está
-            println("Adding input resource as-is: $projectDir")
-            launcher.addInputResource(projectDir)
+            
+            launcher.buildModel()
+            println("Spoon model built. Total types: ${launcher.model.allTypes.size}")
+            return launcher
+        } catch (e: Exception) {
+            // Check if error is related to unsupported Java version (e.g., "Unrecognized option : -23")
+            var currentException: Throwable? = e
+            var foundUnrecognizedOption = false
+            var versionNumber = "unknown"
+            
+            while (currentException != null) {
+                val message = currentException.message ?: ""
+                if (message.contains("Unrecognized option")) {
+                    foundUnrecognizedOption = true
+                    val versionMatch = Regex("""-(\d+)""").find(message)
+                    versionNumber = versionMatch?.groupValues?.get(1) ?: "unknown"
+                    break
+                }
+                currentException = currentException.cause
+            }
+            
+            if (foundUnrecognizedOption) {
+                throw RuntimeException(
+                    "Spoon detected Java version $versionNumber which is not supported by the JDT compiler. " +
+                    "The JDT compiler used by Spoon may not support Java versions newer than 21. " +
+                    "This error occurs when the binary was compiled with a newer Java version than what JDT supports. " +
+                    "Original error: ${e.message}",
+                    e
+                )
+            }
+            
+            // Build detailed error message
+            val errorDetails = buildString {
+                append("Failed to initialize Spoon launcher")
+                if (e.message != null) {
+                    append(": ${e.message}")
+                }
+                if (e.cause != null) {
+                    append("\nCaused by: ${e.cause?.javaClass?.simpleName}")
+                    if (e.cause?.message != null) {
+                        append(": ${e.cause?.message}")
+                    }
+                }
+            }
+            
+            throw RuntimeException(errorDetails, e)
         }
-        
-        launcher.buildModel()
-        println("Spoon model built. Total types: ${launcher.model.allTypes.size}")
-        return launcher
     }
 }

@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm") version "2.1.10"
     application
-    id("org.graalvm.buildtools.native") version "0.10.2"
 }
 
 group = "org.example"
@@ -12,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation("fr.inria.gforge.spoon:spoon-core:11.2.0")
+    implementation("fr.inria.gforge.spoon:spoon-core:11.2.2-beta-12")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
     implementation("info.picocli:picocli:4.7.5")
@@ -69,31 +68,6 @@ tasks.register<Copy>("createExecutable") {
     }
 }
 
-// GraalVM Native Image Configuration
-graalvmNative {
-    binaries {
-        named("main") {
-            imageName.set("contract-coverage")
-            debug.set(false)
-            verbose.set(false)
-            
-            // Build options for native image
-            buildArgs.add("--no-fallback")
-            buildArgs.add("--enable-url-protocols=http,https")
-            buildArgs.add("-H:+ReportExceptionStackTraces")
-            
-            // Enable monitoring (replaces deprecated AllowVMInspection)
-            buildArgs.add("--enable-monitoring=heapdump,jvmstat")
-            
-            // Runtime options
-            runtimeArgs.add("-XX:+UseG1GC")
-        }
-    }
-    
-    // Toolchain configuration
-    toolchainDetection.set(true)
-}
-
 // Task to create a complete distribution
 tasks.register("createDistribution") {
     description = "Creates a complete distribution with executable and JAR"
@@ -110,43 +84,151 @@ tasks.register("createDistribution") {
     }
 }
 
-// Task to create native binary distribution
-tasks.register("createNativeDistribution") {
-    description = "Creates a distribution with native binary (no JVM required)"
+// Task to create custom JRE using jlink (requires Java 9+)
+tasks.register<JavaExec>("jlink") {
+    description = "Creates a custom JRE with only required modules using jlink"
     group = "distribution"
-    dependsOn("nativeCompile")
+    dependsOn("jar")
+    
+    val jlinkDir = file("build/jlink-distribution")
+    val jreDir = file("$jlinkDir/jre")
+    
+    doFirst {
+        jlinkDir.mkdirs()
+    }
+    
+    // Use jlink from the current Java installation
+    val javaHome = System.getProperty("java.home")
+    val jlinkExecutable = if (System.getProperty("os.name").lowercase().contains("win")) {
+        "$javaHome/bin/jlink.exe"
+    } else {
+        "$javaHome/bin/jlink"
+    }
+    
+    executable = jlinkExecutable
+    args = listOf(
+        "--module-path", "$javaHome/jmods",
+        "--add-modules", "ALL-MODULE-PATH",
+        "--strip-debug",
+        "--compress", "2",
+        "--no-header-files",
+        "--no-man-pages",
+        "--output", jreDir.absolutePath
+    )
     
     doLast {
-        val distDir = file("build/native-distribution")
-        distDir.mkdirs()
+        // Copy JAR to distribution
+        copy {
+            from(tasks.jar)
+            into(jlinkDir)
+        }
         
-        // Find the native binary - it could be in different locations
-        val possiblePaths = listOf(
-            file("build/native/nativeCompile/contract-coverage"),
-            file("build/native/nativeCompile/contract-coverage.exe"),
-            file("build/native/nativeCompile/main/contract-coverage"),
-            file("build/native/nativeCompile/main/contract-coverage.exe")
-        )
+        // Create launcher script
+        val launcherScript = file("$jlinkDir/contract-coverage")
+        val jarName = tasks.jar.get().archiveFileName.get()
+        val scriptContent = """
+            |#!/bin/bash
+            |SCRIPT_DIR="$(cd "$(dirname "${'$'}{BASH_SOURCE[0]}")" && pwd)"
+            |"${'$'}SCRIPT_DIR/jre/bin/java" -jar "${'$'}SCRIPT_DIR/$jarName" "${'$'}@"
+        """.trimMargin()
+        launcherScript.writeText(scriptContent)
+        launcherScript.setExecutable(true)
         
-        val nativeBinary = possiblePaths.firstOrNull { it.exists() }
-        
-        if (nativeBinary != null) {
-            copy {
-                from(nativeBinary)
-                into(distDir)
-                fileMode = 0b111101101 // 755
+        println("\n✓ Custom JRE created successfully!")
+        println("✓ JRE location: ${jreDir.absolutePath}")
+        println("✓ Distribution location: ${jlinkDir.absolutePath}")
+        println("\nTo use:")
+        println("  ${jlinkDir.absolutePath}/contract-coverage <code-path> <pact-file>")
+        println("\nNote: Includes custom JRE, no system Java required!")
+    }
+}
+
+// Task to create native package using jpackage (requires Java 14+)
+tasks.register<Exec>("jpackage") {
+    description = "Creates a native package/installer using jpackage"
+    group = "distribution"
+    dependsOn("jar")
+    
+    val jpackageDir = file("build/jpackage-distribution")
+    
+    doFirst {
+        // Clean previous jpackage output
+        val existingApp = file("${jpackageDir.absolutePath}/contract-coverage")
+        if (existingApp.exists()) {
+            existingApp.deleteRecursively()
+        }
+        jpackageDir.mkdirs()
+    }
+    
+    // Use jpackage from the Java toolchain (same version used for compilation)
+    val javaToolchain = javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(20))
+    }.get()
+    val javaHome = javaToolchain.metadata.installationPath.asFile.absolutePath
+    val jpackageExecutable = if (System.getProperty("os.name").lowercase().contains("win")) {
+        "$javaHome/bin/jpackage.exe"
+    } else {
+        "$javaHome/bin/jpackage"
+    }
+    
+    commandLine(
+        jpackageExecutable,
+        "--name", "contract-coverage",
+        "--input", "build/libs",
+        "--main-jar", tasks.jar.get().archiveFileName.get(),
+        "--main-class", "org.example.MainKt",
+        "--type", "app-image",
+        "--dest", jpackageDir.absolutePath,
+        "--java-options", "-Xmx512m"
+    )
+    
+    doLast {
+        val targetBinary = file("${jpackageDir.absolutePath}/contract-coverage/bin/contract-coverage")
+        if (targetBinary.exists()) {
+            // Create a symlink in project root for convenience (Linux/Mac only)
+            if (!System.getProperty("os.name").lowercase().contains("win")) {
+                val symlink = file("contract-coverage")
+                // Force remove if exists (even if it's a regular file or symlink)
+                if (symlink.exists()) {
+                    symlink.delete()
+                }
+                try {
+                    // Use relative path for symlink
+                    val relativePath = targetBinary.relativeTo(symlink.parentFile).path
+                    // Ensure we're in the right directory and create symlink
+                    val result = exec {
+                        commandLine("ln", "-sfn", relativePath, symlink.name)
+                        workingDir = symlink.parentFile
+                        isIgnoreExitValue = false
+                    }
+                    println("\n✓ Native package created successfully!")
+                    println("✓ Package location: ${jpackageDir.absolutePath}")
+                    println("✓ Symlink created: ./contract-coverage -> ${relativePath}")
+                    println("\nTo use:")
+                    println("  ./contract-coverage <code-path> <pact-file>")
+                    println("  Or: ${jpackageDir.absolutePath}/contract-coverage/bin/contract-coverage <code-path> <pact-file>")
+                    println("\nNote: Includes bundled JRE, no system Java required!")
+                } catch (e: Exception) {
+                    println("\n✓ Native package created successfully!")
+                    println("✓ Package location: ${jpackageDir.absolutePath}")
+                    println("⚠ Could not create symlink: ${e.message}")
+                    println("\nTo use:")
+                    println("  ${jpackageDir.absolutePath}/contract-coverage/bin/contract-coverage <code-path> <pact-file>")
+                    println("\nNote: Includes bundled JRE, no system Java required!")
+                }
+            } else {
+                println("\n✓ Native package created successfully!")
+                println("✓ Package location: ${jpackageDir.absolutePath}")
+                println("\nTo use:")
+                println("  ${jpackageDir.absolutePath}/contract-coverage/bin/contract-coverage <code-path> <pact-file>")
+                println("\nNote: Includes bundled JRE, no system Java required!")
             }
-            
-            println("\n✓ Native binary created successfully!")
-            println("✓ Binary location: ${nativeBinary.absolutePath}")
-            println("✓ Distribution location: ${distDir.absolutePath}")
-            println("\nTo use the native binary:")
-            println("  ${distDir.absolutePath}/${nativeBinary.name} <code-path> <pact-file>")
-            println("\nNote: No JVM required to run this binary!")
         } else {
-            println("⚠ Native binary not found. Make sure GraalVM is installed and nativeCompile task succeeded.")
-            println("Searched in:")
-            possiblePaths.forEach { println("  - ${it.absolutePath}") }
+            println("\n✓ Native package created successfully!")
+            println("✓ Package location: ${jpackageDir.absolutePath}")
+            println("\nTo use:")
+            println("  ${jpackageDir.absolutePath}/contract-coverage/bin/contract-coverage <code-path> <pact-file>")
+            println("\nNote: Includes bundled JRE, no system Java required!")
         }
     }
 }

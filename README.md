@@ -18,18 +18,22 @@ The project provides a Command Line Interface (CLI) using Picocli.
 
 ```bash
 # Using Gradle
-./gradlew run --args="<code-path> <pact-file> [options]"
+./gradlew run --args="--source-code-dir <code-path> --pact-path <pact-file> [options]"
 
 # Using the JAR file
-java -jar build/libs/contract-coverage-1.0-SNAPSHOT.jar <code-path> <pact-file> [options]
+java -jar build/libs/contract-coverage-1.0-SNAPSHOT.jar --source-code-dir <code-path> --pact-path <pact-file> [options]
+
+# Using native binary (jpackage)
+./contract-coverage --source-code-dir <code-path> --pact-path <pact-file> [options]
+# Or: ./build/jpackage-distribution/contract-coverage/bin/contract-coverage --source-code-dir <code-path> --pact-path <pact-file> [options]
 ```
 
-### Arguments
+### Required Options
 
-- `<code-path>` - Path to the Java source code directory to analyze (required)
-- `<pact-file>` - Path to the Pact JSON file (required)
+- `-s, --source-code-dir=<path>` - Path to the Java source code directory to analyze (required)
+- `-p, --pact-path=<path>` - Path to the Pact directory containing JSON files (required)
 
-### Options
+### Optional Options
 
 - `-o, --output=<path>` - Output path for the coverage report (default: `./reports/report.json`)
 - `-h, --help` - Show help message
@@ -38,15 +42,25 @@ java -jar build/libs/contract-coverage-1.0-SNAPSHOT.jar <code-path> <pact-file> 
 ### Examples
 
 ```bash
-# Analyze code and compare with Pact file
-./gradlew run --args="src/main/java src/test/resources/pacts/contract.json"
+# Analyze code and compare with all Pact files in directory
+./gradlew run --args="--source-code-dir src/main/java --pact-path src/test/resources/pacts"
+
+# Using short options
+./gradlew run --args="-s src/main/java -p src/test/resources/pacts"
 
 # Specify custom output path
-./gradlew run --args="src/main/java src/test/resources/pacts/contract.json -o ./output/coverage.json"
+./gradlew run --args="--source-code-dir src/main/java --pact-path ./pacts --output ./output/coverage.json"
+
+# Using native binary (jpackage)
+./contract-coverage -s src/main/java -p ./pacts -o ./reports/coverage.json
+
+./contract-coverage --source-code-dir ../contract-example/src/main/java/org/example/contractexample/ --pact-path ../contract-example/build/pacts
 
 # Show help
 ./gradlew run --args="--help"
 ```
+
+**Note:** The `--pact-path` option accepts a directory path. All JSON files in that directory will be read and their endpoints will be combined for comparison with the code endpoints.
 
 ### Building
 
@@ -60,109 +74,105 @@ java -jar build/libs/contract-coverage-1.0-SNAPSHOT.jar <code-path> <pact-file> 
 
 The JAR file will be created at `build/libs/contract-coverage-1.0-SNAPSHOT.jar`.
 
-### Building Native Binary (No JVM Required)
+### Building Native Binary Distribution (No System Java Required)
 
-To create a native binary that doesn't require a JVM to run, you'll need GraalVM installed.
+To create a native binary distribution that includes a bundled JRE (no system Java required), we use **jpackage** (available in Java 14+).
 
 #### Prerequisites
 
-1. **Install GraalVM:**
+1. **Java 14 or higher** (Java 20 recommended, same as compilation)
    ```bash
-   # Download from https://www.graalvm.org/downloads/
-   # Or use SDKMAN:
-   sdk install java 22.3.0.r17-grl  # GraalVM Community Edition
-   sdk use java 22.3.0.r17-grl
+   java -version  # Should show Java 14+
    ```
 
-2. **Install Native Image:**
+2. **jpackage tool** (included with Java 14+)
    ```bash
-   gu install native-image
+   jpackage --version  # Should show jpackage version
    ```
 
-3. **Verify installation:**
-   ```bash
-   java -version  # Should show GraalVM
-   native-image --version
-   ```
-
-#### Build Native Binary
-
-**Opção 1: Usando o script automatizado (recomendado)**
+#### Build Native Binary Distribution
 
 ```bash
-# Script que verifica pré-requisitos e compila automaticamente
-./build-native.sh
+# Build the distribution with bundled JRE
+./gradlew jpackage
 ```
 
-O script `build-native.sh`:
-- ✅ Verifica se GraalVM está instalado
-- ✅ Verifica se native-image está instalado
-- ✅ Instala native-image automaticamente se necessário
-- ✅ Compila o binário nativo
-- ✅ Cria a distribuição
-- ✅ Testa o binário gerado
+The distribution will be created at:
+- `build/jpackage-distribution/contract-coverage/` (Linux/Mac/Windows)
 
-**Opção 2: Usando Gradle diretamente**
+A symlink will be automatically created in the project root:
+- `./contract-coverage` → `build/jpackage-distribution/contract-coverage/bin/contract-coverage`
 
-```bash
-# Build native binary
-./gradlew nativeCompile
+#### Distribution Structure
 
-# Or create complete native distribution (recommended)
-./gradlew createNativeDistribution
+```
+build/jpackage-distribution/contract-coverage/
+├── bin/
+│   └── contract-coverage          ← Executable launcher
+└── lib/
+    ├── app/
+    │   └── contract-coverage-1.0-SNAPSHOT.jar  ← Application JAR
+    └── runtime/                   ← Bundled JRE (~149MB)
 ```
 
-The native binary will be created at:
-- `build/native/nativeCompile/contract-coverage` (Linux/Mac)
-- `build/native/nativeCompile/contract-coverage.exe` (Windows)
-- `build/native-distribution/contract-coverage` (after createNativeDistribution)
+**Total size:** ~170MB (includes bundled JRE)
 
 #### Usage
 
-Once built, you can run the native binary directly without Java:
+Once built, you can run the binary directly:
 
 ```bash
-# Using the distribution directory (recommended)
-./build/native-distribution/contract-coverage <code-path> <pact-file>
+# Using the symlink (recommended)
+./contract-coverage --source-code-dir <code-path> --pact-path <pact-file>
 
-# Or directly from build output
-./build/native/nativeCompile/contract-coverage <code-path> <pact-file>
-
-# Windows
-build\native-distribution\contract-coverage.exe <code-path> <pact-file>
+# Or using the full path
+./build/jpackage-distribution/contract-coverage/bin/contract-coverage --source-code-dir <code-path> --pact-path <pact-file>
 ```
 
-**Benefits of Native Binary:**
-- ✅ No JVM required to run
-- ✅ Faster startup time (instant startup)
-- ✅ Lower memory footprint
-- ✅ Single executable file
-- ✅ Easy to distribute
+**Benefits of jpackage Distribution:**
+- ✅ No system Java required (JRE is bundled)
+- ✅ Self-contained distribution (single folder)
+- ✅ Works on any Linux system (same architecture)
+- ✅ Easy to distribute (just copy the folder)
+- ✅ Compatible with Spoon/JDT (full JVM available)
+
+#### Distributing the Binary
+
+To distribute the application, copy the entire `contract-coverage` folder:
+
+```bash
+# Copy the distribution folder
+cp -r build/jpackage-distribution/contract-coverage /path/to/distribute/
+
+# Users can run it directly
+/path/to/distribute/contract-coverage/bin/contract-coverage --help
+```
+
+**Note:** The entire folder must be distributed as it contains the bundled JRE. The distribution is self-contained and does not require Java to be installed on the target system.
 
 #### Troubleshooting
 
-If you encounter issues building the native binary:
+If you encounter issues building the distribution:
 
-1. **Verify GraalVM installation:**
+1. **Verify Java version:**
    ```bash
-   java -version  # Should show GraalVM
-   native-image --version
+   java -version  # Should be Java 14+
    ```
 
-2. **Check if native-image is installed:**
+2. **Check if jpackage is available:**
    ```bash
-   gu install native-image
+   jpackage --version
    ```
 
 3. **Build with verbose output:**
    ```bash
-   ./gradlew nativeCompile --info
+   ./gradlew jpackage --info
    ```
 
 4. **Common issues:**
-   - Missing native-image tool: Install with `gu install native-image`
-   - Reflection errors: The configuration files in `src/main/resources/META-INF/native-image/` should handle most cases
-   - Missing dependencies: Ensure all required libraries are compatible with GraalVM
+   - Java version mismatch: Ensure the Java version used for compilation matches the one used by jpackage (Java 20 recommended)
+   - Missing jpackage: Install a JDK 14+ that includes jpackage
+   - Permission errors: Ensure the build directory is writable
 
 ## Test Cases
 
