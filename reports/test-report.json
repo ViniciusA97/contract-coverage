@@ -1,5 +1,5 @@
 {
-  "timestamp" : "2025-11-15T06:33:23.561208533",
+  "timestamp" : "2025-11-15T06:27:09.822526869",
   "totalEndpoints" : 2,
   "endpoints" : [ {
     "path" : "/users/{id}",

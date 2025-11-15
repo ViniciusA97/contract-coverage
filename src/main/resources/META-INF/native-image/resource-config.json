@@ -1,0 +1,19 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": ".*\\.json$"
+      },
+      {
+        "pattern": ".*\\.properties$"
+      },
+      {
+        "pattern": "org/eclipse/jdt/.*"
+      },
+      {
+        "pattern": "org/eclipse/.*"
+      }
+    ]
+  }
+}
+

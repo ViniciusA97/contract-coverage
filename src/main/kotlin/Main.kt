@@ -1,18 +1,20 @@
 package org.example
 
-import org.example.core.services.reports.JsonReportWriter
-import org.example.core.wrappers.spoon.SpoonWrapper
+import org.example.infraestructure.interfaces.ContractCoverageCommand
+import picocli.CommandLine
+import kotlin.system.exitProcess
 
-const val projectDir = "/home/vini/IdeaProjects/contract-example"
-const val specificFolder = "src/main/java/org/example/contractexample"
-
-const val finalPath = "$projectDir/$specificFolder"
-
-fun main() {
-    val app = ContractCoverageApp(
-        SpoonWrapper(finalPath),
-        JsonReportWriter()
-    )
-    val pactPath = "$projectDir/build/pacts/contract-example-consumer-user-service-provider.json"
-    app.run("./reports/report.json", pactPath)
+fun main(args: Array<String>) {
+    try {
+        val command = ContractCoverageCommand()
+        val commandLine = CommandLine(command)
+        commandLine.isUnmatchedArgumentsAllowed = false
+        commandLine.isStopAtUnmatched = false
+        val exitCode = commandLine.execute(*args)
+        exitProcess(exitCode)
+    } catch (e: Exception) {
+        System.err.println("Fatal error: ${e.message}")
+        e.printStackTrace()
+        exitProcess(1)
+    }
 }
