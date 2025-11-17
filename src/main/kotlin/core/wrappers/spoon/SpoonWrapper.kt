@@ -100,22 +100,18 @@ class SpoonWrapper(
                     .filter { it.isFile && it.extension == "java" }
                     .toList()
                 
-                println("Found ${javaFiles.size} Java files in $projectDir")
                 javaFiles.forEach { javaFile ->
                     launcher.addInputResource(javaFile.absolutePath)
                 }
             } else if (file.isFile && file.extension == "java") {
                 // Se for um arquivo Java específico
-                println("Processing single Java file: $projectDir")
                 launcher.addInputResource(projectDir)
             } else {
                 // Fallback: adiciona como está
-                println("Adding input resource as-is: $projectDir")
                 launcher.addInputResource(projectDir)
             }
             
             launcher.buildModel()
-            println("Spoon model built. Total types: ${launcher.model.allTypes.size}")
             return launcher
         } catch (e: Exception) {
             // Check if error is related to unsupported Java version (e.g., "Unrecognized option : -23")

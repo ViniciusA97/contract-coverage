@@ -15,6 +15,8 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
     implementation("info.picocli:picocli:4.7.5")
+    // Suppress SLF4J warnings by providing a no-op implementation
+    implementation("org.slf4j:slf4j-nop:2.0.17")
     testImplementation(kotlin("test"))
 }
 

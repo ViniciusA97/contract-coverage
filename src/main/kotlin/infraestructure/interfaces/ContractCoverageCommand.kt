@@ -39,35 +39,105 @@ class ContractCoverageCommand : Callable<Int> {
     )
     private var outputPath: String = "./reports/report.json"
 
+    @CommandLine.Option(
+        names = ["-d", "--dry-run"],
+        description = ["Run in dry-run mode (always returns exit code 0, even on errors)"],
+        defaultValue = "false"
+    )
+    private var dryRun: Boolean = false
+
+    @CommandLine.Option(
+        names = ["-t", "--threshold"],
+        description = ["Minimum coverage percentage required (0-100). Fails if coverage is below threshold."],
+        paramLabel = "<percentage>"
+    )
+    private var threshold: Double? = null
+
     override fun call(): Int {
         try {
+            printBanner()
+            
+            if (dryRun) {
+                println("Running in DRY-RUN mode (exit code will always be 0)")
+                println()
+            }
+            
             // Validate inputs
             validateInputs()
-
-            println("Analyzing code at: $codePath")
-            println("Reading Pact files from: $pactPath")
-            println("Generating report at: $outputPath")
-            println()
 
             val analyzer = SpoonWrapper(codePath)
             val reportWriter = JsonReportWriter()
             val app = ContractCoverageApp(analyzer, reportWriter)
 
-            app.run(outputPath, pactPath)
+            val coverage = app.run(outputPath, pactPath)
 
-            println("✓ Analysis complete!")
-            println("✓ Report generated at: $outputPath")
+            // Log coverage information
+            println("Coverage: ${String.format("%.2f", coverage.coveragePercent)}%")
+            println("Total endpoints: ${coverage.totalCodeEndpoints}")
+            println("Matched: ${coverage.matchedByPact}")
+            println("Missing: ${coverage.totalCodeEndpoints - coverage.matchedByPact}")
+            println()
+            
+            // Log matched endpoints
+            if (coverage.matchedEndpoints.isNotEmpty()) {
+                println("Matched endpoints:")
+                coverage.matchedEndpoints.forEach { endpoint ->
+                    println("  ✓ ${endpoint.method.value} ${endpoint.path}")
+                }
+                println()
+            }
+            
+            // Log missing endpoints
+            if (coverage.missingEndpoints.isNotEmpty()) {
+                println("Missing endpoints:")
+                coverage.missingEndpoints.forEach { endpoint ->
+                    println("  ✗ ${endpoint.method.value} ${endpoint.path}")
+                }
+                println()
+            }
+            
+            println("Report generated at: $outputPath")
+            println()
 
-            return CommandLine.ExitCode.OK
+            // Check threshold if specified
+            var exitCode = CommandLine.ExitCode.OK
+            if (threshold != null) {
+                val thresholdValue = threshold!!
+                if (thresholdValue < 0 || thresholdValue > 100) {
+                    System.err.println("${red("Error:")} Threshold must be between 0 and 100")
+                    return if (dryRun) {
+                        CommandLine.ExitCode.OK
+                    } else {
+                        CommandLine.ExitCode.USAGE
+                    }
+                }
+
+                val thresholdMet = coverage.coveragePercent >= thresholdValue
+                if (thresholdMet) {
+                    println(green("✓ Threshold met: ${String.format("%.2f", coverage.coveragePercent)}% >= ${String.format("%.2f", thresholdValue)}%"))
+                } else {
+                    println(red("✗ Threshold not met: ${String.format("%.2f", coverage.coveragePercent)}% < ${String.format("%.2f", thresholdValue)}%"))
+                    if (!dryRun) {
+                        exitCode = CommandLine.ExitCode.SOFTWARE  // Exit code 1: threshold not met
+                    }
+                }
+            }
+
+            return exitCode
         } catch (e: IllegalArgumentException) {
-            System.err.println("✗ Error: ${e.message}")
-            return CommandLine.ExitCode.USAGE
+            System.err.println("Error: ${e.message}")
+            return if (dryRun) {
+                CommandLine.ExitCode.OK  // In dry-run mode, always return success
+            } else {
+                CommandLine.ExitCode.USAGE  // Exit code 2: usage error
+            }
         } catch (e: Exception) {
-            System.err.println("✗ Error: ${e.message}")
-            System.err.println("Exception type: ${e.javaClass.name}")
-            // Always print stack trace for debugging in native binary
-            e.printStackTrace()
-            return CommandLine.ExitCode.SOFTWARE
+            System.err.println("Error: ${e.message}")
+            return if (dryRun) {
+                CommandLine.ExitCode.OK  // In dry-run mode, always return success
+            } else {
+                CommandLine.ExitCode.SOFTWARE  // Exit code 1: software error
+            }
         }
     }
 
@@ -102,6 +172,47 @@ class ContractCoverageCommand : Callable<Int> {
         val outputDir = outputFile.parentFile
         if (outputDir != null && !outputDir.exists()) {
             outputDir.mkdirs()
+        }
+    }
+
+    private fun printBanner() {
+        val banner = """
+            
+            ╔═══════════════════════════════════════════════════════════════╗
+            ║                                                               ║
+            ║                    Contract Coverage                          ║
+            ║                                                               ║
+            ║                     v1.0-SNAPSHOT                             ║
+            ║                                                               ║
+            ╚═══════════════════════════════════════════════════════════════╝
+            
+        """.trimIndent()
+        println(banner)
+    }
+
+    private fun green(text: String): String {
+        // Check if we're in a terminal that supports colors
+        val isTerminal = System.console() != null || 
+                        System.getenv("TERM") != null ||
+                        System.getProperty("java.class.path", "").contains("gradle")
+        
+        return if (isTerminal && System.getProperty("NO_COLOR", "").isEmpty()) {
+            "\u001B[32m$text\u001B[0m"  // ANSI green
+        } else {
+            text  // No color if not in terminal or NO_COLOR is set
+        }
+    }
+
+    private fun red(text: String): String {
+        // Check if we're in a terminal that supports colors
+        val isTerminal = System.console() != null || 
+                        System.getenv("TERM") != null ||
+                        System.getProperty("java.class.path", "").contains("gradle")
+        
+        return if (isTerminal && System.getProperty("NO_COLOR", "").isEmpty()) {
+            "\u001B[31m$text\u001B[0m"  // ANSI red
+        } else {
+            text  // No color if not in terminal or NO_COLOR is set
         }
     }
 }
