@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Script to generate native binary for contract-coverage
-# This script checks prerequisites and compiles the native binary using GraalVM
+# Script to generate native binary distribution for contract-coverage
+# This script checks prerequisites and creates a self-contained distribution using jpackage
 
 set -e  # Exit on first error
 
@@ -44,57 +44,46 @@ if [ ! -f "build.gradle.kts" ]; then
     exit 1
 fi
 
-print_header "Contract Coverage - Native Binary Build"
+print_header "Contract Coverage - Native Distribution Build"
 
 # 1. Check if Java is installed
 print_info "Checking Java..."
 if ! command -v java &> /dev/null; then
     print_error "Java not found in PATH"
-    print_info "Please install Java/GraalVM"
+    print_info "Please install Java 14 or higher (JDK recommended)"
     exit 1
 fi
 
 JAVA_VERSION=$(java -version 2>&1 | head -n 1)
 print_success "Java found: $JAVA_VERSION"
 
-# 2. Check if it's GraalVM
-print_info "Checking if it's GraalVM..."
-if ! java -version 2>&1 | grep -qi "graalvm"; then
-    print_warning "Does not appear to be GraalVM!"
-    print_info "Current version: $JAVA_VERSION"
-    print_info ""
-    print_info "To generate native binary, you need GraalVM:"
-    print_info "  1. Install GraalVM: https://www.graalvm.org/downloads/"
-    print_info "  2. Or use SDKMAN: sdk install java 23.0.2-graalce"
-    print_info "  3. Configure JAVA_HOME to point to GraalVM"
-    print_info ""
-    read -p "Do you want to continue anyway? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
+# 2. Check Java version (jpackage requires Java 14+)
+print_info "Checking Java version..."
+JAVA_MAJOR_VERSION=$(java -version 2>&1 | head -n 1 | sed -E 's/.*version "([0-9]+).*/\1/')
+if [ "$JAVA_MAJOR_VERSION" -lt 14 ]; then
+    print_error "Java 14 or higher is required for jpackage!"
+    print_info "Current version: Java $JAVA_MAJOR_VERSION"
+    print_info "Please install Java 14 or higher (Java 20 recommended)"
+    exit 1
 else
-    print_success "GraalVM detected!"
+    print_success "Java version OK: $JAVA_MAJOR_VERSION"
 fi
 
-# 3. Check if native-image is installed
-print_info "Checking native-image..."
-if ! command -v native-image &> /dev/null; then
-    print_warning "native-image not found!"
-    print_info "Installing native-image..."
-    
-    if command -v gu &> /dev/null; then
-        gu install native-image
-        print_success "native-image installed!"
+# 3. Check if jpackage is available
+print_info "Checking jpackage..."
+if ! command -v jpackage &> /dev/null; then
+    # Try to find jpackage in JAVA_HOME
+    if [ -n "$JAVA_HOME" ] && [ -f "$JAVA_HOME/bin/jpackage" ]; then
+        print_success "jpackage found in JAVA_HOME: $JAVA_HOME/bin/jpackage"
     else
-        print_error "Tool 'gu' not found!"
-        print_info "Please install native-image manually:"
-        print_info "  gu install native-image"
+        print_error "jpackage not found!"
+        print_info "jpackage is included with JDK 14+. Make sure you have a JDK (not just JRE) installed."
+        print_info "If using JAVA_HOME, ensure it points to a JDK installation."
         exit 1
     fi
 else
-    NATIVE_IMAGE_VERSION=$(native-image --version 2>&1 | head -n 1)
-    print_success "native-image found: $NATIVE_IMAGE_VERSION"
+    JPACKAGE_VERSION=$(jpackage --version 2>&1 | head -n 1)
+    print_success "jpackage found: $JPACKAGE_VERSION"
 fi
 
 # 4. Check if Gradle is available
@@ -121,90 +110,92 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     print_success "Build cleaned!"
 fi
 
-# 6. Compile native binary
-print_header "Compiling Native Binary"
-print_info "This may take several minutes..."
-print_info ""
-
-# Execute nativeCompile
-if $GRADLE_CMD nativeCompile --info; then
-    print_success "Native compilation completed!"
+# 6. Build JAR first
+print_header "Building JAR"
+print_info "Building application JAR..."
+if $GRADLE_CMD jar; then
+    print_success "JAR built successfully!"
 else
-    print_error "Native compilation failed!"
+    print_error "JAR build failed!"
     print_info "Please check the errors above"
     exit 1
 fi
 
-# 7. Create distribution
-print_header "Creating Distribution"
-if $GRADLE_CMD createNativeDistribution; then
-    print_success "Distribution created!"
+# 7. Create distribution with jpackage
+print_header "Creating Distribution with jpackage"
+print_info "This may take a few minutes..."
+print_info "Creating self-contained distribution (includes bundled JRE)..."
+print_info ""
+
+if $GRADLE_CMD jpackage; then
+    print_success "Distribution created successfully!"
 else
-    print_warning "createNativeDistribution task failed, but binary may be available"
+    print_error "Distribution creation failed!"
+    print_info "Please check the errors above"
+    exit 1
 fi
 
-# 8. Verify generated binary
-print_header "Verifying Generated Binary"
+# 8. Verify generated distribution
+print_header "Verifying Generated Distribution"
 
-BINARY_PATHS=(
-    "build/native/nativeCompile/contract-coverage"
-    "build/native/nativeCompile/main/contract-coverage"
-    "build/native-distribution/contract-coverage"
-)
+DISTRIBUTION_DIR="build/jpackage-distribution/contract-coverage"
+BINARY_PATH="$DISTRIBUTION_DIR/bin/contract-coverage"
+SYMLINK_PATH="./contract-coverage"
 
-BINARY_FOUND=""
-for path in "${BINARY_PATHS[@]}"; do
-    if [ -f "$path" ]; then
-        BINARY_FOUND="$path"
-        break
-    fi
-done
-
-if [ -n "$BINARY_FOUND" ]; then
-    print_success "Binary found: $BINARY_FOUND"
+if [ -d "$DISTRIBUTION_DIR" ] && [ -f "$BINARY_PATH" ]; then
+    print_success "Distribution found: $DISTRIBUTION_DIR"
     echo ""
     
-    # Binary information
-    BINARY_SIZE=$(du -h "$BINARY_FOUND" | cut -f1)
-    print_info "Size: $BINARY_SIZE"
+    # Distribution information
+    DISTRIBUTION_SIZE=$(du -sh "$DISTRIBUTION_DIR" | cut -f1)
+    print_info "Distribution size: $DISTRIBUTION_SIZE"
     
-    # Check if it's executable
-    if [ -x "$BINARY_FOUND" ]; then
+    # Check if binary is executable
+    if [ -x "$BINARY_PATH" ]; then
         print_success "Binary is executable"
     else
         print_warning "Binary is not executable, adding permission..."
-        chmod +x "$BINARY_FOUND"
+        chmod +x "$BINARY_PATH"
         print_success "Execution permission added"
+    fi
+    
+    # Check for symlink
+    if [ -L "$SYMLINK_PATH" ] || [ -f "$SYMLINK_PATH" ]; then
+        print_success "Symlink found: $SYMLINK_PATH"
+    else
+        print_info "Symlink not found (this is OK, you can use the full path)"
     fi
     
     # Test execution
     print_info "Testing binary execution..."
-    if "$BINARY_FOUND" --help &> /dev/null; then
+    if "$BINARY_PATH" --help &> /dev/null; then
         print_success "Binary works correctly!"
     else
         print_warning "Binary found but did not respond to --help"
     fi
     
     echo ""
-    print_header "Native Binary Generated Successfully!"
+    print_header "Distribution Generated Successfully!"
     echo ""
-    print_success "Location: $BINARY_FOUND"
+    print_success "Distribution location: $DISTRIBUTION_DIR"
     echo ""
-    print_info "To use the binary:"
-    echo "  $BINARY_FOUND <code-path> <pact-file>"
+    print_info "To use the distribution:"
+    if [ -L "$SYMLINK_PATH" ] || [ -f "$SYMLINK_PATH" ]; then
+        echo "  ./contract-coverage --source-code-dir <code-path> --pact-path <pact-dir>"
+    fi
+    echo "  $BINARY_PATH --source-code-dir <code-path> --pact-path <pact-dir>"
     echo ""
     print_info "Example:"
-    echo "  $BINARY_FOUND src/main/java src/test/resources/pacts/contract.json"
+    echo "  $BINARY_PATH --source-code-dir src/main/java --pact-path src/test/resources/pacts"
     echo ""
-    print_info "Note: This binary does NOT require JVM to run!"
+    print_info "Note: This distribution includes a bundled JRE (~170MB total)"
+    print_info "      No system Java installation required on target system!"
     echo ""
     
 else
-    print_error "Binary not found!"
-    print_info "Checked paths:"
-    for path in "${BINARY_PATHS[@]}"; do
-        echo "  - $path"
-    done
+    print_error "Distribution not found!"
+    print_info "Expected location: $DISTRIBUTION_DIR"
+    print_info "Expected binary: $BINARY_PATH"
     exit 1
 fi
 

@@ -1,236 +1,334 @@
 # Contract Coverage
 
-A tool for analyzing Java code to extract RestTemplate calls and compare them with Pact contracts to measure contract coverage.
+**Contract Coverage** is a command-line tool that analyzes Java source code to extract REST API calls made using Spring's `RestTemplate` and compares them with Pact contract definitions to measure contract coverage.
 
-## Features
+## What is Contract Coverage?
 
-- Analyzes Java source code to extract RestTemplate API calls
-- Compares extracted endpoints with Pact contract definitions
-- Generates coverage reports in JSON format
-- Supports multiple RestTemplate methods (GET, POST, PUT, PATCH, DELETE, exchange)
-- Handles path variables matching (e.g., `/users/{id}` matches `/users/999`)
+Contract Coverage helps you ensure that your Java application's REST API calls are properly covered by Pact contracts. It:
 
-## CLI Usage
+- **Scans** your Java source code to find all `RestTemplate` API calls
+- **Extracts** endpoint paths and HTTP methods from your code
+- **Compares** extracted endpoints with your Pact contract definitions
+- **Calculates** coverage percentage and identifies missing endpoints
+- **Generates** detailed JSON reports with coverage metrics
 
-The project provides a Command Line Interface (CLI) using Picocli.
+This tool is particularly useful for:
+- Validating that all API calls in your codebase have corresponding Pact contracts
+- Identifying endpoints that need contract coverage
+- Ensuring contract testing completeness in CI/CD pipelines
+- Tracking contract coverage over time
 
-### Basic Usage
+## Installation
 
-```bash
-# Using Gradle
-./gradlew run --args="--source-code-dir <code-path> --pact-path <pact-file> [options]"
+### Option 1: Using the Pre-built Binary (Recommended)
 
-# Using the JAR file
-java -jar build/libs/contract-coverage-1.0-SNAPSHOT.jar --source-code-dir <code-path> --pact-path <pact-file> [options]
+Download the self-contained distribution from the releases page. The distribution includes a bundled JRE, so no Java installation is required on the target system.
 
-# Using native binary (jpackage)
-./contract-coverage --source-code-dir <code-path> --pact-path <pact-file> [options]
-# Or: ./build/jpackage-distribution/contract-coverage/bin/contract-coverage --source-code-dir <code-path> --pact-path <pact-file> [options]
-```
-
-### Required Options
-
-- `-s, --source-code-dir=<path>` - Path to the Java source code directory to analyze (required)
-- `-p, --pact-path=<path>` - Path to the Pact directory containing JSON files (required)
-
-### Optional Options
-
-- `-o, --output=<path>` - Output path for the coverage report (default: `./reports/report.json`)
-- `-h, --help` - Show help message
-- `-V, --version` - Print version information
-
-### Examples
-
-```bash
-# Analyze code and compare with all Pact files in directory
-./gradlew run --args="--source-code-dir src/main/java --pact-path src/test/resources/pacts"
-
-# Using short options
-./gradlew run --args="-s src/main/java -p src/test/resources/pacts"
-
-# Specify custom output path
-./gradlew run --args="--source-code-dir src/main/java --pact-path ./pacts --output ./output/coverage.json"
-
-# Using native binary (jpackage)
-./contract-coverage -s src/main/java -p ./pacts -o ./reports/coverage.json
-
-./contract-coverage --source-code-dir ../contract-example/src/main/java/org/example/contractexample/ --pact-path ../contract-example/build/pacts
-
-# Show help
-./gradlew run --args="--help"
-```
-
-**Note:** The `--pact-path` option accepts a directory path. All JSON files in that directory will be read and their endpoints will be combined for comparison with the code endpoints.
-
-### Building
-
-```bash
-# Build the project
-./gradlew build
-
-# Create executable JAR
-./gradlew jar
-```
-
-The JAR file will be created at `build/libs/contract-coverage-1.0-SNAPSHOT.jar`.
-
-### Building Native Binary Distribution (No System Java Required)
-
-To create a native binary distribution that includes a bundled JRE (no system Java required), we use **jpackage** (available in Java 14+).
+### Option 2: Building from Source
 
 #### Prerequisites
 
-1. **Java 14 or higher** (Java 20 recommended, same as compilation)
-   ```bash
-   java -version  # Should show Java 14+
-   ```
+- Java 20 or higher (JDK)
+- Gradle (or use the included Gradle wrapper)
 
-2. **jpackage tool** (included with Java 14+)
-   ```bash
-   jpackage --version  # Should show jpackage version
-   ```
-
-#### Build Native Binary Distribution
+#### Build Steps
 
 ```bash
-# Build the distribution with bundled JRE
+# Clone the repository
+git clone <repository-url>
+cd contract-coverage
+
+# Build the JAR
+./gradlew jar
+
+# Or build the self-contained distribution
 ./gradlew jpackage
 ```
 
-The distribution will be created at:
-- `build/jpackage-distribution/contract-coverage/` (Linux/Mac/Windows)
+The JAR will be created at `build/libs/contract-coverage-1.0-SNAPSHOT.jar`.
 
-A symlink will be automatically created in the project root:
-- `./contract-coverage` → `build/jpackage-distribution/contract-coverage/bin/contract-coverage`
-
-#### Distribution Structure
-
-```
-build/jpackage-distribution/contract-coverage/
-├── bin/
-│   └── contract-coverage          ← Executable launcher
-└── lib/
-    ├── app/
-    │   └── contract-coverage-1.0-SNAPSHOT.jar  ← Application JAR
-    └── runtime/                   ← Bundled JRE (~149MB)
+For a self-contained distribution (includes bundled JRE), use:
+```bash
+./gradlew jpackage
 ```
 
-**Total size:** ~170MB (includes bundled JRE)
+The distribution will be created at `build/jpackage-distribution/contract-coverage/`.
 
-#### Usage
+## Usage
 
-Once built, you can run the binary directly:
+### Basic Command
 
 ```bash
-# Using the symlink (recommended)
-./contract-coverage --source-code-dir <code-path> --pact-path <pact-file>
-
-# Or using the full path
-./build/jpackage-distribution/contract-coverage/bin/contract-coverage --source-code-dir <code-path> --pact-path <pact-file>
+contract-coverage --source-code-dir <code-path> --pact-path <pact-dir>
 ```
 
-**Benefits of jpackage Distribution:**
-- ✅ No system Java required (JRE is bundled)
-- ✅ Self-contained distribution (single folder)
-- ✅ Works on any Linux system (same architecture)
-- ✅ Easy to distribute (just copy the folder)
-- ✅ Compatible with Spoon/JDT (full JVM available)
+### Command-Line Options
 
-#### Distributing the Binary
+#### Required Options
 
-To distribute the application, copy the entire `contract-coverage` folder:
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--source-code-dir` | `-s` | Path to the Java source code directory to analyze |
+| `--pact-path` | `-p` | Path to the directory containing Pact JSON files |
+
+#### Optional Options
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--output` | `-o` | Output path for the coverage report | `./reports/report.json` |
+| `--threshold` | `-t` | Minimum coverage percentage required (0-100). Fails if coverage is below threshold | None |
+| `--dry-run` | `-d` | Run in dry-run mode (always returns exit code 0, even on errors) | `false` |
+| `--help` | `-h` | Show help message | - |
+| `--version` | `-V` | Print version information | - |
+
+### Examples
+
+#### Basic Analysis
 
 ```bash
-# Copy the distribution folder
-cp -r build/jpackage-distribution/contract-coverage /path/to/distribute/
+# Analyze code and compare with Pact contracts
+./contract-coverage -s src/main/java -p src/test/resources/pacts
 
-# Users can run it directly
-/path/to/distribute/contract-coverage/bin/contract-coverage --help
+# Using long options
+./contract-coverage --source-code-dir src/main/java --pact-path src/test/resources/pacts
 ```
 
-**Note:** The entire folder must be distributed as it contains the bundled JRE. The distribution is self-contained and does not require Java to be installed on the target system.
+#### Custom Output Location
 
-#### Troubleshooting
+```bash
+./contract-coverage -s src/main/java -p ./pacts -o ./output/coverage.json
+```
 
-If you encounter issues building the distribution:
+#### With Coverage Threshold
 
-1. **Verify Java version:**
-   ```bash
-   java -version  # Should be Java 14+
-   ```
+```bash
+# Require at least 80% coverage (fails if below threshold)
+./contract-coverage -s src/main/java -p ./pacts --threshold 80
 
-2. **Check if jpackage is available:**
-   ```bash
-   jpackage --version
-   ```
+# If coverage >= 80%: Exit code 0 (success)
+# If coverage < 80%: Exit code 1 (failure)
+```
 
-3. **Build with verbose output:**
-   ```bash
-   ./gradlew jpackage --info
-   ```
+#### Dry-Run Mode
 
-4. **Common issues:**
-   - Java version mismatch: Ensure the Java version used for compilation matches the one used by jpackage (Java 20 recommended)
-   - Missing jpackage: Install a JDK 14+ that includes jpackage
-   - Permission errors: Ensure the build directory is writable
+```bash
+# Run analysis but always return exit code 0 (useful for CI/CD)
+./contract-coverage -s src/main/java -p ./pacts --dry-run
+```
 
-## Test Cases
+#### Using the JAR File
 
-This project contains unit tests to validate the functionality of the `SpoonWrapper` class, which is responsible for analyzing Java source code and extracting API endpoint information from `RestTemplate.exchange` method calls. Below is a detailed description of the test cases and what each one verifies.
+```bash
+java -jar contract-coverage-1.0-SNAPSHOT.jar -s src/main/java -p ./pacts
+```
 
-### 1. **Test Case: `test3/HttpClient3.java` and `test3/Main.java`**
-- **Description**: This test case verifies that the `SpoonWrapper` can correctly extract the endpoint when the `RestTemplate.exchange` method is called directly with hardcoded arguments.
-- **Expected Result**: The endpoint extracted should be:
-    - **Path**: `/test-3`
-    - **Method**: `POST`
+#### Using Gradle
 
-### 2. **Test Case: `test5/Main.java`**
-- **Description**: This test case ensures that the `SpoonWrapper` can handle cases where the URL is constructed using a constant and concatenation. The `RestTemplate.exchange` method is called with a dynamically constructed URL.
-- **Expected Result**: The endpoint extracted should be:
-    - **Path**: `/test-5`
-    - **Method**: `POST`
+```bash
+./gradlew run --args="-s src/main/java -p src/test/resources/pacts"
+```
 
-### 3. **Test Case: `test6/HttpClient6.java`**
-- **Description**: This test case validates that the `SpoonWrapper` can extract endpoint information when the `RestTemplate.exchange` method is called within a private method, and the arguments are defined as local variables.
-- **Expected Result**: The endpoint extracted should be:
-    - **Path**: `/test-6`
-    - **Method**: `POST`
+## Output
 
-### 4. **Test Case: `test7/HttpClient7.java`**
-- **Description**: This test case verifies that the `SpoonWrapper` can extract endpoints when the arguments of the `RestTemplate.exchange` method are passed as parameters to another method.
-- **Expected Result**: The endpoint extracted should be:
-    - **Path**: `/test-7`
-    - **Method**: `GET`
+### Console Output
 
-### 5. **Test Case: `test8/HttpClient8.java`**
-- **Description**: This test case ensures that the `SpoonWrapper` can handle cases where the URL and method are defined as constants in a separate class.
-- **Expected Result**: The endpoint extracted should be:
-    - **Path**: `/test-8`
-    - **Method**: `PUT`
+When you run Contract Coverage, you'll see output like this:
 
-### 6. **Test Case: `test9/HttpClient9.java`**
-- **Description**: This test case validates that the `SpoonWrapper` can process calls to the `RestTemplate.exchange` method where the arguments are obtained from helper methods.
-- **Expected Result**: The endpoint extracted should be:
-    - **Path**: `/test-9`
-    - **Method**: `DELETE`
+```
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║                    Contract Coverage                          ║
+║                                                               ║
+║                     v1.0-SNAPSHOT                             ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
 
-### 7. **Test Case: `test10/HttpClient10.java`**
-- **Description**: This test case ensures that the `SpoonWrapper` can handle multiple calls to the `RestTemplate.exchange` method within the same method.
-- **Expected Result**: The endpoints extracted should be:
-    - **Path**: `/test-10-a`
-    - **Method**: `PATCH`
-    - **Path**: `/test-10-b`
-    - **Method**: `POST`
+Coverage: 75.00%
+Total endpoints: 4
+Matched: 3
+Missing: 1
 
-## Summary
+Matched endpoints:
+  ✓ GET /api/users
+  ✓ POST /api/users
+  ✓ PUT /api/users/{id}
 
-Each test case is designed to cover a different scenario:
-- **Hardcoded arguments** (`test3`).
-- **Dynamic URL construction** (`test5`).
-- **Local variable usage in private methods** (`test6`).
-- **Arguments passed as method parameters** (`test7`).
-- **Constants in separate classes** (`test8`).
-- **Helper methods for arguments** (`test9`).
-- **Multiple calls in the same method** (`test10`).
+Missing endpoints:
+  ✗ DELETE /api/users/{id}
 
-These tests ensure that the `SpoonWrapper` can handle various ways of defining and passing arguments to the `RestTemplate.exchange` method.
+Report generated at: ./reports/report.json
+
+✓ Threshold met: 75.00% >= 70.00%
+```
+
+### JSON Report
+
+The tool generates a detailed JSON report at the specified output path (default: `./reports/report.json`):
+
+```json
+{
+  "endpoints": [
+    {
+      "path": "/api/users",
+      "method": "GET"
+    },
+    {
+      "path": "/api/users",
+      "method": "POST"
+    }
+  ],
+  "coverage": {
+    "totalCodeEndpoints": 4,
+    "matchedByPact": 3,
+    "coveragePercent": 75.0,
+    "missingEndpoints": [
+      {
+        "path": "/api/users/{id}",
+        "method": "DELETE"
+      }
+    ],
+    "matchedEndpoints": [
+      {
+        "path": "/api/users",
+        "method": "GET"
+      },
+      {
+        "path": "/api/users",
+        "method": "POST"
+      },
+      {
+        "path": "/api/users/{id}",
+        "method": "PUT"
+      }
+    ]
+  }
+}
+```
+
+## Supported RestTemplate Methods
+
+Contract Coverage currently supports the following `RestTemplate` methods:
+
+### HTTP Methods Supported
+
+| Method | RestTemplate Methods |
+|--------|---------------------|
+| **GET** | `getForEntity()`, `getForObject()`, `exchange()` |
+| **POST** | `postForEntity()`, `postForObject()`, `exchange()` |
+| **PUT** | `put()`, `exchange()` |
+| **PATCH** | `patchForObject()`, `patchForEntity()`, `patch()`, `exchange()` |
+| **DELETE** | `delete()`, `exchange()` |
+
+### Example Code Patterns Supported
+
+The tool can extract endpoints from various code patterns:
+
+```java
+// Direct method calls
+restTemplate.getForObject("/api/users", User.class);
+restTemplate.postForEntity("/api/users", user, User.class);
+restTemplate.put("/api/users/{id}", user, id);
+restTemplate.patchForObject("/api/users/{id}", user, User.class, id);
+restTemplate.patchForEntity("/api/users/{id}", user, User.class, id);
+restTemplate.patch("/api/users/{id}", user, id);
+restTemplate.delete("/api/users/{id}", id);
+
+// Using exchange() method
+restTemplate.exchange("/api/users", HttpMethod.GET, null, User.class);
+restTemplate.exchange("/api/users/{id}", HttpMethod.DELETE, request, Void.class, id);
+
+// Dynamic URL construction
+String baseUrl = "/api";
+restTemplate.getForObject(baseUrl + "/users", User.class);
+
+// Path variables
+restTemplate.getForObject("/api/users/{id}", User.class, userId);
+
+// Constants and helper methods
+restTemplate.exchange(API_ENDPOINTS.USERS, HttpMethod.GET, null, User.class);
+```
+
+### Path Variable Matching
+
+The tool supports path variable matching, so these are considered equivalent:
+
+- `/users/{id}` matches `/users/123`
+- `/users/{userId}/posts/{postId}` matches `/users/456/posts/789`
+- `/api/v1/users/{id}` matches `/api/v1/users/999`
+
+## Exit Codes
+
+The tool returns the following exit codes:
+
+| Exit Code | Meaning |
+|-----------|---------|
+| `0` | Success - Analysis completed successfully |
+| `1` | Software error - Analysis failed or threshold not met |
+| `2` | Usage error - Invalid arguments or missing required options |
+
+**Note:** In `--dry-run` mode, the tool always returns exit code `0`, even if errors occur or thresholds are not met.
+
+## Troubleshooting
+
+### Common Issues
+
+#### "No JSON files found in Pact directory"
+
+**Problem:** The Pact directory doesn't contain any `.json` files.
+
+**Solution:** Ensure your Pact directory contains valid Pact JSON files. The tool reads all `.json` files in the specified directory.
+
+#### "Code path does not exist"
+
+**Problem:** The source code directory path is incorrect.
+
+**Solution:** Verify the path to your Java source code directory. Use absolute paths if relative paths don't work.
+
+#### "Threshold not met"
+
+**Problem:** The coverage percentage is below the specified threshold.
+
+**Solution:** 
+- Review the missing endpoints in the output
+- Add Pact contracts for the missing endpoints
+- Or adjust the threshold if appropriate
+- Use `--dry-run` to test without failing the build
+
+## Building the Distribution
+
+To create a self-contained distribution with bundled JRE:
+
+```bash
+# Using the automated script
+./build-binary.sh
+
+# Or manually using Gradle
+./gradlew jpackage
+```
+
+The distribution will be created at `build/jpackage-distribution/contract-coverage/`.
+
+**Distribution Size:** ~170MB (includes bundled JRE)
+
+**Note:** The entire distribution folder must be copied when distributing the application, as it contains the bundled JRE.
+
+## Requirements
+
+- **Java Source Code:** Java 8+ source files using Spring's `RestTemplate`
+- **Pact Files:** Valid Pact JSON contract files (Pact specification v1+)
+- **Runtime:** Java 20+ (for building) or the pre-built distribution (no Java required)
+
+## Limitations
+
+- Currently only supports Spring's `RestTemplate` (not WebClient or other HTTP clients)
+- Requires Java source code (not compiled bytecode)
+- Path variable matching is based on segment count and pattern matching
+- Complex URL construction may not be fully resolved in all cases
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests.
+
+## License
+
+[Add your license information here]

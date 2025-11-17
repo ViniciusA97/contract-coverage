@@ -1,5 +1,6 @@
 package org.example
 
+import org.example.core.entities.Coverage
 import org.example.core.services.pact.PactReader
 import org.example.core.services.pact.PactEndpointMapper
 import org.example.core.services.coverage.EndpointsComparator
@@ -12,14 +13,12 @@ class ContractCoverageApp(
     private val analyzer: StaticCodeAnalyzer,
     private val reportWriter: ReportWriter
 ) {
-    fun run(reportOutput: String, pactPath: String) {
+    fun run(reportOutput: String, pactPath: String): Coverage {
         val pactReader = PactReader()
         
         // Read all Pacts from directory
         val pacts = if (File(pactPath).isDirectory) {
-            val directoryPacts = pactReader.readDirectory(pactPath)
-            println("Found ${directoryPacts.size} Pact file(s) in directory")
-            directoryPacts
+            pactReader.readDirectory(pactPath)
         } else {
             // Backward compatibility: if it's a file, read it
             listOf(pactReader.read(pactPath))
@@ -33,12 +32,12 @@ class ContractCoverageApp(
             PactEndpointMapper().interactionsToEndpoints(pact)
         }
         
-        println("Total endpoints from Pacts: ${pactEndpoints.size}")
-        
         val codeEndpoints = report.getEndpoints()
         val coverage = EndpointsComparator().compare(codeEndpoints, pactEndpoints)
         report.setCoverage(coverage)
 
         reportWriter.writeReport(report, reportOutput)
+        
+        return coverage
     }
 }

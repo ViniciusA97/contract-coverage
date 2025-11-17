@@ -13,8 +13,8 @@ fun main(args: Array<String>) {
         val exitCode = commandLine.execute(*args)
         exitProcess(exitCode)
     } catch (e: Exception) {
-        System.err.println("Fatal error: ${e.message}")
+        System.err.println("Fatal error: ${e.message ?: e.javaClass.name}")
         e.printStackTrace()
-        exitProcess(1)
+        exitProcess(CommandLine.ExitCode.SOFTWARE)
     }
 }
