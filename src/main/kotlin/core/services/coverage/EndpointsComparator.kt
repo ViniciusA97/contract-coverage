@@ -45,6 +45,7 @@ class EndpointsComparator {
      * - /users/{id} matches /users/999
      * - /users/{userId}/posts/{postId} matches /users/123/posts/456
      * - /users/{id} does not match /users/123/posts
+     * - /users/{dynamic} matches /users/ANYTHING (dynamic placeholder)
      */
     private fun pathsMatch(codePath: String, pactPath: String): Boolean {
         // Exact match
@@ -62,19 +63,15 @@ class EndpointsComparator {
             val codeSegment = codeSegments[i]
             val pactSegment = pactSegments[i]
 
-            // If code segment is a path variable (e.g., {id}), it matches any value
+            // If code segment is a path variable (e.g., {id}, {dynamic}), it matches any value
             if (codeSegment.startsWith("{") && codeSegment.endsWith("}")) {
                 // Path variable matches any value
                 continue
             }
 
-            // If pact segment looks like a path variable but code doesn't, no match
-            // (This handles the case where Pact has {id} but code has a specific value)
+            // If pact segment looks like a path variable, code literal should match if it looks like a value
             if (pactSegment.startsWith("{") && pactSegment.endsWith("}")) {
-                // Pact has variable but code has literal - check if they're the same variable name
-                if (codeSegment != pactSegment) {
-                    return false
-                }
+                // Pact has variable - code can have any literal value
                 continue
             }
 

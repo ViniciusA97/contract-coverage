@@ -6,6 +6,7 @@ import org.springframework.web.client.RestTemplate;
 public class HttpClient1 {
     private final RestTemplate restTemplate = new RestTemplate();
 
+    @Request(url="")
     public void doRequest() {
         // URL -> CtLiteral
         // Method -> CtFieldReadImpl
