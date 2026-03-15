@@ -1,5 +1,6 @@
 package org.example.core.wrappers.spoon
 
+import org.example.core.entities.UnresolvedMarkers
 import spoon.reflect.CtModel
 import spoon.reflect.code.CtBinaryOperator
 import spoon.reflect.code.CtExpression
@@ -30,7 +31,11 @@ class SpoonExpressionResolver {
                 // Substitui parâmetro se for encontrado
                 val index = params.indexOfFirst { it.simpleName == expr.variable.simpleName }
                 if (index >= 0 && index < args.size) {
-                    resolveExpression(args[index], scopeMethod, model)
+                    val argExpr = args[index]
+                    // Use the caller's method as context, not the current scope
+                    // The argument expression belongs to the caller method
+                    val callerMethod = argExpr.getParent(CtMethod::class.java)
+                    resolveExpression(argExpr, callerMethod ?: scopeMethod, model)
                 } else {
                     resolveExpression(expr, scopeMethod, model)
                 }
@@ -97,7 +102,7 @@ class SpoonExpressionResolver {
                             val callerMethod = call.getParent(CtMethod::class.java)
                             val argExpr = call.arguments[index]
                             val resolved = resolveExpression(argExpr, callerMethod, model)
-                            if (!resolved.contains("não resolvida")) return resolved
+                            if (!UnresolvedMarkers.isUnresolved(resolved)) return resolved
                         }
                     }
                 }
@@ -119,7 +124,7 @@ class SpoonExpressionResolver {
 
                 if (indirectMatch != null) return indirectMatch
 
-                return "<variável não resolvida>"
+                return UnresolvedMarkers.UNRESOLVED_VARIABLE
             }
 
 
@@ -136,6 +141,12 @@ class SpoonExpressionResolver {
             is CtInvocation<*> -> {
                 val execRef = expr.executable
                 val resolvedArgs = expr.arguments.map { resolveExpression(it, contextMethod, model, context) }
+
+                // Check for UriComponentsBuilder pattern
+                val uriBuilderResult = tryResolveUriComponentsBuilder(expr, contextMethod, model)
+                if (uriBuilderResult != null) {
+                    return uriBuilderResult
+                }
 
                 // Tratamento genérico para funções tipo format
                 val firstArg = expr.arguments.firstOrNull()
@@ -168,7 +179,143 @@ class SpoonExpressionResolver {
                 return resolvedArgs.joinToString("")
             }
 
-            else -> "<expressão não reconhecida>"
+            else -> UnresolvedMarkers.UNRESOLVED_EXPRESSION
+        }
+    }
+
+    /**
+     * Try to resolve UriComponentsBuilder pattern.
+     * Handles patterns like:
+     *   UriComponentsBuilder.fromHttpUrl(BASE_URL).path("/users").toUriString()
+     *   UriComponentsBuilder.fromHttpUrl(BASE_URL).path("/users").buildAndExpand(...).toUriString()
+     *
+     * @return The resolved path if this is a UriComponentsBuilder chain, null otherwise
+     */
+    private fun tryResolveUriComponentsBuilder(
+        expr: CtInvocation<*>,
+        contextMethod: CtMethod<*>?,
+        model: CtModel
+    ): String? {
+        val methodName = expr.executable.simpleName
+        
+        // Check if this is a terminal method of UriComponentsBuilder chain
+        if (methodName !in listOf("toUriString", "toString", "toUri", "build", "encode")) {
+            return null
+        }
+        
+        // Walk up the invocation chain to find path() and fromHttpUrl() calls
+        val chainInfo = extractUriBuilderChain(expr, contextMethod, model)
+        
+        if (chainInfo.pathSegments.isEmpty() && chainInfo.baseUrl == null) {
+            return null
+        }
+        
+        // Extract path from base URL if present (e.g., https://api.example.com/v0.1 -> /v0.1)
+        val baseUrlPath = chainInfo.baseUrl?.let { extractPathFromUrl(it) } ?: ""
+        
+        // Build the final path from base URL path + segments
+        val segmentsPath = chainInfo.pathSegments.joinToString("")
+        val fullPath = if (baseUrlPath.isNotEmpty() && baseUrlPath != "/") {
+            baseUrlPath + segmentsPath
+        } else {
+            segmentsPath
+        }
+        
+        // Return the full path (already extracted from URL)
+        return if (fullPath.isNotEmpty()) fullPath else extractPathFromUrl(segmentsPath)
+    }
+    
+    /**
+     * Data class to hold extracted information from UriComponentsBuilder chain
+     */
+    private data class UriBuilderChainInfo(
+        val baseUrl: String? = null,
+        val pathSegments: List<String> = emptyList()
+    )
+    
+    /**
+     * Extract information from UriComponentsBuilder method chain.
+     * Walks backwards through the chain to collect path() and fromHttpUrl() values.
+     */
+    private fun extractUriBuilderChain(
+        expr: CtInvocation<*>,
+        contextMethod: CtMethod<*>?,
+        model: CtModel
+    ): UriBuilderChainInfo {
+        var baseUrl: String? = null
+        val pathSegments = mutableListOf<String>()
+        
+        var current: CtExpression<*>? = expr
+        
+        while (current is CtInvocation<*>) {
+            val invocation = current
+            val methodName = invocation.executable.simpleName
+            
+            when (methodName) {
+                "path" -> {
+                    // Extract single path argument
+                    val pathArg = invocation.arguments.firstOrNull()
+                    if (pathArg != null) {
+                        val resolvedPath = resolveExpression(pathArg, contextMethod, model)
+                        if (!UnresolvedMarkers.isUnresolved(resolvedPath)) {
+                            // Add at beginning since we're walking backwards
+                            pathSegments.add(0, resolvedPath)
+                        }
+                    }
+                }
+                "pathSegment" -> {
+                    // pathSegment can have multiple arguments: .pathSegment("a", "b", "c") -> /a/b/c
+                    // Preserve unresolved segments as {dynamic} to maintain path structure
+                    val segments = invocation.arguments.map { arg ->
+                        val resolved = resolveExpression(arg, contextMethod, model)
+                        if (!UnresolvedMarkers.isUnresolved(resolved) && resolved.isNotBlank()) {
+                            resolved
+                        } else {
+                            "{dynamic}" // Placeholder for dynamic/unresolved segments
+                        }
+                    }
+                    if (segments.isNotEmpty()) {
+                        // Join segments with "/" and add at beginning
+                        val combinedPath = "/" + segments.joinToString("/")
+                        pathSegments.add(0, combinedPath)
+                    }
+                }
+                "fromHttpUrl", "fromUriString", "fromPath" -> {
+                    // Extract base URL
+                    val urlArg = invocation.arguments.firstOrNull()
+                    if (urlArg != null) {
+                        baseUrl = resolveExpression(urlArg, contextMethod, model)
+                    }
+                }
+                // Methods that don't affect the path: build, encode, buildAndExpand, toUriString, etc.
+            }
+            
+            // Move to the target of this invocation (the object/expression the method was called on)
+            current = invocation.target
+        }
+        
+        return UriBuilderChainInfo(baseUrl, pathSegments)
+    }
+    
+    /**
+     * Extract the path portion from a URL string.
+     * Example: "https://api.example.com/v1/users" -> "/v1/users"
+     *          "/users" -> "/users"
+     */
+    private fun extractPathFromUrl(url: String): String {
+        // If it's already just a path, return it
+        if (url.startsWith("/")) {
+            return url
+        }
+        
+        // Try to parse as URL and extract path
+        return try {
+            val uri = java.net.URI(url)
+            uri.path ?: url
+        } catch (e: Exception) {
+            // If parsing fails, try simple regex extraction
+            val pathMatch = Regex("""https?://[^/]+(/[^\s]*)""").find(url)
+            pathMatch?.groupValues?.get(1) ?: url
         }
     }
 }

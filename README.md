@@ -332,3 +332,47 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 ## License
 
 [Add your license information here]
+
+```json
+{
+  "consumer": {
+    "name": "OrderService"
+  },
+  "provider": {
+    "name": "PaymentService"
+  },
+  "interactions": [
+    {
+      "description": "retrieve payment by id",
+      "providerStates": [
+        {
+          "name": "a payment with id 10 exists"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/payments/10",
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "id": 10,
+          "status": "CONFIRMED",
+          "amount": 150.0
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "4.0"
+    }
+  }
+}
+```

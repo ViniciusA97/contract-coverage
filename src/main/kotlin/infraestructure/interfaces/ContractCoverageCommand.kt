@@ -1,6 +1,7 @@
 package org.example.infraestructure.interfaces
 
 import org.example.ContractCoverageApp
+import org.example.core.entities.UnresolvedMarkers
 import org.example.core.services.reports.JsonReportWriter
 import org.example.core.wrappers.spoon.SpoonWrapper
 import picocli.CommandLine
@@ -78,6 +79,11 @@ class ContractCoverageCommand : Callable<Int> {
             println("Missing: ${coverage.totalCodeEndpoints - coverage.matchedByPact}")
             println()
             
+            // Separate resolved and unresolved endpoints
+            val (unresolvedEndpoints, resolvedMissing) = coverage.missingEndpoints.partition { 
+                UnresolvedMarkers.isPathUnresolved(it.path) 
+            }
+            
             // Log matched endpoints
             if (coverage.matchedEndpoints.isNotEmpty()) {
                 println("Matched endpoints:")
@@ -87,11 +93,20 @@ class ContractCoverageCommand : Callable<Int> {
                 println()
             }
             
-            // Log missing endpoints
-            if (coverage.missingEndpoints.isNotEmpty()) {
+            // Log missing endpoints (resolved URLs only)
+            if (resolvedMissing.isNotEmpty()) {
                 println("Missing endpoints:")
-                coverage.missingEndpoints.forEach { endpoint ->
+                resolvedMissing.forEach { endpoint ->
                     println("  ✗ ${endpoint.method.value} ${endpoint.path}")
+                }
+                println()
+            }
+            
+            // Log unresolved endpoints (dynamic URLs)
+            if (unresolvedEndpoints.isNotEmpty()) {
+                println(yellow("Unresolved endpoints (dynamic URLs - cannot be analyzed statically):"))
+                unresolvedEndpoints.forEach { endpoint ->
+                    println("  ⚠ ${endpoint.method.value} ${endpoint.path}")
                 }
                 println()
             }
@@ -211,6 +226,19 @@ class ContractCoverageCommand : Callable<Int> {
         
         return if (isTerminal && System.getProperty("NO_COLOR", "").isEmpty()) {
             "\u001B[31m$text\u001B[0m"  // ANSI red
+        } else {
+            text  // No color if not in terminal or NO_COLOR is set
+        }
+    }
+
+    private fun yellow(text: String): String {
+        // Check if we're in a terminal that supports colors
+        val isTerminal = System.console() != null || 
+                        System.getenv("TERM") != null ||
+                        System.getProperty("java.class.path", "").contains("gradle")
+        
+        return if (isTerminal && System.getProperty("NO_COLOR", "").isEmpty()) {
+            "\u001B[33m$text\u001B[0m"  // ANSI yellow
         } else {
             text  // No color if not in terminal or NO_COLOR is set
         }

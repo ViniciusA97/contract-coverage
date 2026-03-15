@@ -72,8 +72,8 @@ class SpoonWrapperTest {
 
         val expectedEndpoints = listOf(
             Endpoint("/test-4", HttpMethod.POST),
-            Endpoint("", HttpMethod.GET),
-            Endpoint("", HttpMethod.PUT)
+            Endpoint("<dynamic-url>", HttpMethod.GET),
+            Endpoint("<dynamic-url>", HttpMethod.PUT)
         )
 
         assertEquals(expectedEndpoints, endpoints)
@@ -907,6 +907,62 @@ class SpoonWrapperTest {
 
         val expectedEndpoints = listOf(
             Endpoint("/variable/test7", HttpMethod.POST)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    // ========================
+    // UriComponentsBuilder Tests
+    // ========================
+
+    @Test
+    fun `12) UriComponentsBuilder - should extract endpoint from UriComponentsBuilder with fromHttpUrl and path`() {
+        val projectDir = Paths.get("$exchangePath/test12").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        // Path now includes the base URL path (/v1 from https://api.example.com/v1)
+        val expectedEndpoints = listOf(
+            Endpoint("/v1/users", HttpMethod.GET)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `13) UriComponentsBuilder with wrapper - should extract endpoints from UriComponentsBuilder passed through wrapper method`() {
+        val projectDir = Paths.get("$exchangePath/test13").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        // Path now includes the base URL path (/v0.1 from https://api.example.com/v0.1)
+        val expectedEndpoints = listOf(
+            Endpoint("/v0.1/merchants/readers", HttpMethod.GET),
+            Endpoint("/v0.1/orders", HttpMethod.POST),
+            Endpoint("/v0.1/merchants/readers/delete", HttpMethod.DELETE)
+        )
+
+        assertEquals(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `14) UriComponentsBuilder with pathSegment - should extract endpoints from pathSegment with multiple arguments`() {
+        val projectDir = Paths.get("$exchangePath/test14").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        // Path now includes the base URL path (/v0.1 from https://api.example.com/v0.1)
+        val expectedEndpoints = listOf(
+            Endpoint("/v0.1/merchants/code123/readers", HttpMethod.GET),
+            Endpoint("/v0.1/me/transactions", HttpMethod.GET),
+            Endpoint("/v0.1/me/refund/tx123", HttpMethod.POST)
         )
 
         assertEquals(expectedEndpoints, endpoints)

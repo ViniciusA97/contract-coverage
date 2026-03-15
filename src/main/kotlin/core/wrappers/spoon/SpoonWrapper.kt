@@ -2,6 +2,9 @@ package org.example.core.wrappers.spoon
 
 import org.example.core.entities.Endpoint
 import org.example.core.entities.HttpMethod
+import org.example.core.services.filedetection.ClientFileDetector
+import org.example.core.services.filedetection.ProjectFileScanner
+import org.example.core.services.filedetection.RestTemplateFileDetector
 import org.example.core.wrappers.StaticCodeAnalyzer
 import org.example.core.wrappers.spoon.callextractors.CallExtractor
 import org.example.core.wrappers.spoon.callextractors.ExchangeCallExtractor
@@ -18,20 +21,23 @@ data class MethodCallContext(
 
 class SpoonWrapper(
     private val projectDir: String,
+    private val detectors: List<ClientFileDetector> = listOf(RestTemplateFileDetector()),
+    private val callerDepth: Int = 1
 ) : StaticCodeAnalyzer {
 
     private val launcher = initLauncher()
     private val spoonExpressionResolver = SpoonExpressionResolver()
     private val classifier = RestTemplateCallClassifier()
+    private val rootUriDetector = RootUriDetector(spoonExpressionResolver)
     private val extractors: List<CallExtractor> = listOf(
-        ExchangeCallExtractor(classifier, spoonExpressionResolver),
-        SimpleMethodCallExtractor({ c, call -> c.isRestTemplateGetForEntity(call) }, HttpMethod.GET, classifier, spoonExpressionResolver),
-        SimpleMethodCallExtractor({ c, call -> c.isRestTemplateGetForObject(call) }, HttpMethod.GET, classifier, spoonExpressionResolver),
-        SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePostForEntity(call) }, HttpMethod.POST, classifier, spoonExpressionResolver),
-        SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePostForObject(call) }, HttpMethod.POST, classifier, spoonExpressionResolver),
-        SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePut(call) }, HttpMethod.PUT, classifier, spoonExpressionResolver),
-        SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePatch(call) }, HttpMethod.PATCH, classifier, spoonExpressionResolver),
-        SimpleMethodCallExtractor({ c, call -> c.isRestTemplateDelete(call) }, HttpMethod.DELETE, classifier, spoonExpressionResolver),
+        ExchangeCallExtractor(classifier, spoonExpressionResolver, rootUriDetector),
+        SimpleMethodCallExtractor({ c, call -> c.isRestTemplateGetForEntity(call) }, HttpMethod.GET, classifier, spoonExpressionResolver, rootUriDetector),
+        SimpleMethodCallExtractor({ c, call -> c.isRestTemplateGetForObject(call) }, HttpMethod.GET, classifier, spoonExpressionResolver, rootUriDetector),
+        SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePostForEntity(call) }, HttpMethod.POST, classifier, spoonExpressionResolver, rootUriDetector),
+        SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePostForObject(call) }, HttpMethod.POST, classifier, spoonExpressionResolver, rootUriDetector),
+        SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePut(call) }, HttpMethod.PUT, classifier, spoonExpressionResolver, rootUriDetector),
+        SimpleMethodCallExtractor({ c, call -> c.isRestTemplatePatch(call) }, HttpMethod.PATCH, classifier, spoonExpressionResolver, rootUriDetector),
+        SimpleMethodCallExtractor({ c, call -> c.isRestTemplateDelete(call) }, HttpMethod.DELETE, classifier, spoonExpressionResolver, rootUriDetector),
     )
 
     override fun analyzeInvocations(): List<Endpoint> {
@@ -92,15 +98,27 @@ class SpoonWrapper(
     private fun initLauncher(): Launcher {
         try {
             val launcher = Launcher()
+            
+            // Configure Spoon to be more tolerant
+            launcher.environment.apply {
+                setNoClasspath(true)
+                setIgnoreDuplicateDeclarations(true)
+                complianceLevel = 17
+                isAutoImports = false
+            }
+            
             val file = java.io.File(projectDir)
             
             if (file.isDirectory) {
-                // Se for um diretório, adiciona recursivamente todos os arquivos Java
-                val javaFiles = file.walkTopDown()
-                    .filter { it.isFile && it.extension == "java" }
-                    .toList()
+                // Use ProjectFileScanner for smart file detection
+                val scanner = ProjectFileScanner(detectors)
+                val scanResult = scanner.scan(file, callerDepth)
                 
-                javaFiles.forEach { javaFile ->
+                // Print scan statistics
+                scanner.printScanStats(scanResult)
+                
+                // Add all relevant files to Spoon
+                scanResult.allRelevantFiles.forEach { javaFile ->
                     launcher.addInputResource(javaFile.absolutePath)
                 }
             } else if (file.isFile && file.extension == "java") {

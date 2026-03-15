@@ -1,23 +1,107 @@
 {
-  "timestamp" : "2025-11-17T06:24:46.025507444",
-  "totalEndpoints" : 2,
+  "timestamp" : "2026-03-10T21:00:10.044044086",
+  "totalEndpoints" : 16,
   "endpoints" : [ {
-    "path" : "/users/{id}",
+    "path" : "<dynamic-url>",
     "method" : "GET"
   }, {
-    "path" : "/users",
+    "path" : "/v2/login",
     "method" : "POST"
+  }, {
+    "path" : "/v0.1/merchants/{dynamic}/readers",
+    "method" : "GET"
+  }, {
+    "path" : "/v0.1/merchants/{dynamic}/readers",
+    "method" : "POST"
+  }, {
+    "path" : "/v0.1/merchants/{dynamic}/readers/{dynamic}",
+    "method" : "DELETE"
+  }, {
+    "path" : "/v0.1/merchants/{dynamic}/readers/{dynamic}/checkout",
+    "method" : "POST"
+  }, {
+    "path" : "/v0.1/me/transactions",
+    "method" : "GET"
+  }, {
+    "path" : "/v0.1/me/refund/{dynamic}",
+    "method" : "POST"
+  }, {
+    "path" : "/ShipServer/{ID}/shipAdvises",
+    "method" : "POST"
+  }, {
+    "path" : "/routing/request",
+    "method" : "POST"
+  }, {
+    "path" : "/parcel/de/account/auth/ropc/v1/token",
+    "method" : "POST"
+  }, {
+    "path" : "/parcel/de/shipping/v2/orders",
+    "method" : "POST"
+  }, {
+    "path" : "<dynamic-url>",
+    "method" : "POST"
+  }, {
+    "path" : "<dynamic-url>",
+    "method" : "PUT"
+  }, {
+    "path" : "/auth/realms/testentity/protocol/openid-connect/token",
+    "method" : "POST"
+  }, {
+    "path" : "<dynamic-url>",
+    "method" : "PATCH"
   } ],
   "coverage" : {
-    "totalCodeEndpoints" : 2,
-    "matchedByPact" : 2,
-    "coveragePercent" : 100.0,
-    "missingEndpoints" : [ ],
-    "matchedEndpoints" : [ {
-      "path" : "/users/{id}",
+    "totalCodeEndpoints" : 16,
+    "matchedByPact" : 12,
+    "coveragePercent" : 75.0,
+    "missingEndpoints" : [ {
+      "path" : "<dynamic-url>",
       "method" : "GET"
     }, {
-      "path" : "/users",
+      "path" : "<dynamic-url>",
+      "method" : "POST"
+    }, {
+      "path" : "<dynamic-url>",
+      "method" : "PUT"
+    }, {
+      "path" : "<dynamic-url>",
+      "method" : "PATCH"
+    } ],
+    "matchedEndpoints" : [ {
+      "path" : "/v2/login",
+      "method" : "POST"
+    }, {
+      "path" : "/v0.1/merchants/{dynamic}/readers",
+      "method" : "GET"
+    }, {
+      "path" : "/v0.1/merchants/{dynamic}/readers",
+      "method" : "POST"
+    }, {
+      "path" : "/v0.1/merchants/{dynamic}/readers/{dynamic}",
+      "method" : "DELETE"
+    }, {
+      "path" : "/v0.1/merchants/{dynamic}/readers/{dynamic}/checkout",
+      "method" : "POST"
+    }, {
+      "path" : "/v0.1/me/transactions",
+      "method" : "GET"
+    }, {
+      "path" : "/v0.1/me/refund/{dynamic}",
+      "method" : "POST"
+    }, {
+      "path" : "/ShipServer/{ID}/shipAdvises",
+      "method" : "POST"
+    }, {
+      "path" : "/routing/request",
+      "method" : "POST"
+    }, {
+      "path" : "/parcel/de/account/auth/ropc/v1/token",
+      "method" : "POST"
+    }, {
+      "path" : "/parcel/de/shipping/v2/orders",
+      "method" : "POST"
+    }, {
+      "path" : "/auth/realms/testentity/protocol/openid-connect/token",
       "method" : "POST"
     } ]
   }

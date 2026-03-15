@@ -1,24 +1,46 @@
 {
-  "timestamp" : "2025-11-15T06:27:09.822526869",
-  "totalEndpoints" : 2,
-  "endpoints" : [ {
-    "path" : "/users/{id}",
-    "method" : "GET"
-  }, {
-    "path" : "/users",
-    "method" : "POST"
-  } ],
-  "coverage" : {
-    "totalCodeEndpoints" : 2,
-    "matchedByPact" : 2,
-    "coveragePercent" : 100.0,
-    "missingEndpoints" : [ ],
-    "matchedEndpoints" : [ {
-      "path" : "/users/{id}",
-      "method" : "GET"
-    }, {
-      "path" : "/users",
-      "method" : "POST"
-    } ]
+  "consumer": {
+    "name": "OrderService"
+  },
+  "provider": {
+    "name": "PaymentService"
+  },
+  "interactions": [
+    {
+      "description": "retrieve payment by id",
+      "providerStates": [
+        {
+          "name": "a payment with id 10 exists"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/payments/10",
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "id": 10,
+          "status": "CONFIRMED",
+          "amount": 150.0
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "4.0"
+    }
   }
 }
+
+
+
+
+

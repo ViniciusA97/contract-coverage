@@ -181,7 +181,7 @@ tasks.register<Exec>("jpackage") {
         "--main-class", "org.example.MainKt",
         "--type", "app-image",
         "--dest", jpackageDir.absolutePath,
-        "--java-options", "-Xmx512m"
+        "--java-options", "-Xmx2g"
     )
     
     doLast {
