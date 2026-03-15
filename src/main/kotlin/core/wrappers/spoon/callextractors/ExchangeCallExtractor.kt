@@ -55,7 +55,10 @@ class ExchangeCallExtractor(
             path
         }
         
-        return Endpoint(finalPath, httpMethod)
+        // Extract source file information
+        val sourceFile = call.position?.file?.name
+        
+        return Endpoint(finalPath, httpMethod, sourceFile)
     }
     
     /**
