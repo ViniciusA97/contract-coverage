@@ -88,7 +88,8 @@ class ContractCoverageCommand : Callable<Int> {
             if (coverage.matchedEndpoints.isNotEmpty()) {
                 println("Matched endpoints:")
                 coverage.matchedEndpoints.forEach { endpoint ->
-                    println("  ✓ ${endpoint.method.value} ${endpoint.path}")
+                    val source = endpoint.sourceFile?.let { " ($it)" } ?: ""
+                    println("  ✓ ${endpoint.method.value} ${endpoint.path}$source")
                 }
                 println()
             }
@@ -97,7 +98,8 @@ class ContractCoverageCommand : Callable<Int> {
             if (resolvedMissing.isNotEmpty()) {
                 println("Missing endpoints:")
                 resolvedMissing.forEach { endpoint ->
-                    println("  ✗ ${endpoint.method.value} ${endpoint.path}")
+                    val source = endpoint.sourceFile?.let { " ($it)" } ?: ""
+                    println("  ✗ ${endpoint.method.value} ${endpoint.path}$source")
                 }
                 println()
             }
@@ -106,7 +108,8 @@ class ContractCoverageCommand : Callable<Int> {
             if (unresolvedEndpoints.isNotEmpty()) {
                 println(yellow("Unresolved endpoints (dynamic URLs - cannot be analyzed statically):"))
                 unresolvedEndpoints.forEach { endpoint ->
-                    println("  ⚠ ${endpoint.method.value} ${endpoint.path}")
+                    val source = endpoint.sourceFile?.let { " ($it)" } ?: ""
+                    println("  ⚠ ${endpoint.method.value} ${endpoint.path}$source")
                 }
                 println()
             }

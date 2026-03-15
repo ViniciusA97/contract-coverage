@@ -1,108 +1,164 @@
 {
-  "timestamp" : "2026-03-10T21:00:10.044044086",
-  "totalEndpoints" : 16,
+  "timestamp" : "2026-03-15T13:55:11.702972642",
+  "totalEndpoints" : 19,
   "endpoints" : [ {
     "path" : "<dynamic-url>",
-    "method" : "GET"
+    "method" : "GET",
+    "sourceFile" : "NominatimOSMGeocodingProviderImpl.java"
+  }, {
+    "path" : "<dynamic-url>",
+    "method" : "GET",
+    "sourceFile" : "PostgRESTClient.java"
+  }, {
+    "path" : "<dynamic-url>",
+    "method" : "GET",
+    "sourceFile" : "RestService.java"
   }, {
     "path" : "/v2/login",
-    "method" : "POST"
+    "method" : "POST",
+    "sourceFile" : "CleverReachLowLevelClient.java"
   }, {
     "path" : "/v0.1/merchants/{dynamic}/readers",
-    "method" : "GET"
+    "method" : "GET",
+    "sourceFile" : "SumUpClient.java"
   }, {
     "path" : "/v0.1/merchants/{dynamic}/readers",
-    "method" : "POST"
+    "method" : "POST",
+    "sourceFile" : "SumUpClient.java"
   }, {
     "path" : "/v0.1/merchants/{dynamic}/readers/{dynamic}",
-    "method" : "DELETE"
+    "method" : "DELETE",
+    "sourceFile" : "SumUpClient.java"
   }, {
     "path" : "/v0.1/merchants/{dynamic}/readers/{dynamic}/checkout",
-    "method" : "POST"
+    "method" : "POST",
+    "sourceFile" : "SumUpClient.java"
   }, {
     "path" : "/v0.1/me/transactions",
-    "method" : "GET"
+    "method" : "GET",
+    "sourceFile" : "SumUpClient.java"
   }, {
     "path" : "/v0.1/me/refund/{dynamic}",
-    "method" : "POST"
+    "method" : "POST",
+    "sourceFile" : "SumUpClient.java"
   }, {
     "path" : "/ShipServer/{ID}/shipAdvises",
-    "method" : "POST"
+    "method" : "POST",
+    "sourceFile" : "NShiftRestClient.java"
   }, {
     "path" : "/routing/request",
-    "method" : "POST"
+    "method" : "POST",
+    "sourceFile" : "DerKurierClient.java"
   }, {
     "path" : "/parcel/de/account/auth/ropc/v1/token",
-    "method" : "POST"
+    "method" : "POST",
+    "sourceFile" : "CustomOAuth2TokenRetriever.java"
   }, {
     "path" : "/parcel/de/shipping/v2/orders",
-    "method" : "POST"
+    "method" : "POST",
+    "sourceFile" : "DhlShipperGatewayClient.java"
   }, {
     "path" : "<dynamic-url>",
-    "method" : "POST"
+    "method" : "POST",
+    "sourceFile" : "CreditPassClient.java"
   }, {
     "path" : "<dynamic-url>",
-    "method" : "PUT"
+    "method" : "GET",
+    "sourceFile" : "SecurPharmClient.java"
+  }, {
+    "path" : "<dynamic-url>",
+    "method" : "PUT",
+    "sourceFile" : "SecurPharmClient.java"
   }, {
     "path" : "/auth/realms/testentity/protocol/openid-connect/token",
-    "method" : "POST"
+    "method" : "POST",
+    "sourceFile" : "SecurPharmClientAuthenticator.java"
   }, {
-    "path" : "<dynamic-url>",
-    "method" : "PATCH"
+    "path" : "/ShipServer/{ID}/Shipments",
+    "method" : "POST",
+    "sourceFile" : "NShiftShipmentService.java"
   } ],
   "coverage" : {
-    "totalCodeEndpoints" : 16,
+    "totalCodeEndpoints" : 19,
     "matchedByPact" : 12,
-    "coveragePercent" : 75.0,
+    "coveragePercent" : 63.16,
     "missingEndpoints" : [ {
       "path" : "<dynamic-url>",
-      "method" : "GET"
+      "method" : "GET",
+      "sourceFile" : "NominatimOSMGeocodingProviderImpl.java"
     }, {
       "path" : "<dynamic-url>",
-      "method" : "POST"
+      "method" : "GET",
+      "sourceFile" : "PostgRESTClient.java"
     }, {
       "path" : "<dynamic-url>",
-      "method" : "PUT"
+      "method" : "GET",
+      "sourceFile" : "RestService.java"
     }, {
       "path" : "<dynamic-url>",
-      "method" : "PATCH"
+      "method" : "POST",
+      "sourceFile" : "CreditPassClient.java"
+    }, {
+      "path" : "<dynamic-url>",
+      "method" : "GET",
+      "sourceFile" : "SecurPharmClient.java"
+    }, {
+      "path" : "<dynamic-url>",
+      "method" : "PUT",
+      "sourceFile" : "SecurPharmClient.java"
+    }, {
+      "path" : "/ShipServer/{ID}/Shipments",
+      "method" : "POST",
+      "sourceFile" : "NShiftShipmentService.java"
     } ],
     "matchedEndpoints" : [ {
       "path" : "/v2/login",
-      "method" : "POST"
+      "method" : "POST",
+      "sourceFile" : "CleverReachLowLevelClient.java"
     }, {
       "path" : "/v0.1/merchants/{dynamic}/readers",
-      "method" : "GET"
+      "method" : "GET",
+      "sourceFile" : "SumUpClient.java"
     }, {
       "path" : "/v0.1/merchants/{dynamic}/readers",
-      "method" : "POST"
+      "method" : "POST",
+      "sourceFile" : "SumUpClient.java"
     }, {
       "path" : "/v0.1/merchants/{dynamic}/readers/{dynamic}",
-      "method" : "DELETE"
+      "method" : "DELETE",
+      "sourceFile" : "SumUpClient.java"
     }, {
       "path" : "/v0.1/merchants/{dynamic}/readers/{dynamic}/checkout",
-      "method" : "POST"
+      "method" : "POST",
+      "sourceFile" : "SumUpClient.java"
     }, {
       "path" : "/v0.1/me/transactions",
-      "method" : "GET"
+      "method" : "GET",
+      "sourceFile" : "SumUpClient.java"
     }, {
       "path" : "/v0.1/me/refund/{dynamic}",
-      "method" : "POST"
+      "method" : "POST",
+      "sourceFile" : "SumUpClient.java"
     }, {
       "path" : "/ShipServer/{ID}/shipAdvises",
-      "method" : "POST"
+      "method" : "POST",
+      "sourceFile" : "NShiftRestClient.java"
     }, {
       "path" : "/routing/request",
-      "method" : "POST"
+      "method" : "POST",
+      "sourceFile" : "DerKurierClient.java"
     }, {
       "path" : "/parcel/de/account/auth/ropc/v1/token",
-      "method" : "POST"
+      "method" : "POST",
+      "sourceFile" : "CustomOAuth2TokenRetriever.java"
     }, {
       "path" : "/parcel/de/shipping/v2/orders",
-      "method" : "POST"
+      "method" : "POST",
+      "sourceFile" : "DhlShipperGatewayClient.java"
     }, {
       "path" : "/auth/realms/testentity/protocol/openid-connect/token",
-      "method" : "POST"
+      "method" : "POST",
+      "sourceFile" : "SecurPharmClientAuthenticator.java"
     } ]
   }
 }

@@ -7,6 +7,16 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
 
+/**
+ * Compare endpoints ignoring sourceFile field.
+ * This allows tests to focus on path and method without worrying about file detection.
+ */
+fun assertEndpointsEqual(expected: List<Endpoint>, actual: List<Endpoint>) {
+    val expectedNormalized = expected.map { it.copy(sourceFile = null) }.sortedBy { "${it.method}:${it.path}" }
+    val actualNormalized = actual.map { it.copy(sourceFile = null) }.sortedBy { "${it.method}:${it.path}" }
+    assertEquals(expectedNormalized, actualNormalized)
+}
+
 class SpoonWrapperTest {
 
     val codePath = "src/test/resources/code/"
@@ -29,7 +39,7 @@ class SpoonWrapperTest {
         
         val expectedEndpoints = emptyList<Endpoint>()
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -44,7 +54,7 @@ class SpoonWrapperTest {
             Endpoint("/test-2", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -59,7 +69,7 @@ class SpoonWrapperTest {
             Endpoint("/test-3", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -76,7 +86,7 @@ class SpoonWrapperTest {
             Endpoint("<dynamic-url>", HttpMethod.PUT)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -91,7 +101,7 @@ class SpoonWrapperTest {
             Endpoint("/test-5", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -106,7 +116,7 @@ class SpoonWrapperTest {
             Endpoint("/test-6", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -121,7 +131,7 @@ class SpoonWrapperTest {
             Endpoint("/variable/test7", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -136,7 +146,7 @@ class SpoonWrapperTest {
             Endpoint(path = "/template-style", method = HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -151,7 +161,7 @@ class SpoonWrapperTest {
             Endpoint(path = "/multi-wrapper", method = HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -166,7 +176,7 @@ class SpoonWrapperTest {
             Endpoint(path = "/local-vars", method = HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -181,7 +191,7 @@ class SpoonWrapperTest {
             Endpoint(path = "/cars", method = HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     // GET Tests
@@ -195,7 +205,7 @@ class SpoonWrapperTest {
         
         val expectedEndpoints = emptyList<Endpoint>()
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -210,7 +220,7 @@ class SpoonWrapperTest {
             Endpoint("/test-2", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -225,7 +235,7 @@ class SpoonWrapperTest {
             Endpoint("/test-3", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -240,7 +250,7 @@ class SpoonWrapperTest {
             Endpoint("/test-4", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -255,7 +265,7 @@ class SpoonWrapperTest {
             Endpoint("/test-5", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -270,7 +280,7 @@ class SpoonWrapperTest {
             Endpoint("/test-6", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -285,7 +295,7 @@ class SpoonWrapperTest {
             Endpoint("/variable/test7", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     // POST Tests
@@ -299,7 +309,7 @@ class SpoonWrapperTest {
         
         val expectedEndpoints = emptyList<Endpoint>()
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -314,7 +324,7 @@ class SpoonWrapperTest {
             Endpoint("/test-2", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -329,7 +339,7 @@ class SpoonWrapperTest {
             Endpoint("/test-3", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -344,7 +354,7 @@ class SpoonWrapperTest {
             Endpoint("/test-4", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -359,7 +369,7 @@ class SpoonWrapperTest {
             Endpoint("/test-5", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -374,7 +384,7 @@ class SpoonWrapperTest {
             Endpoint("/test-6", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -389,7 +399,7 @@ class SpoonWrapperTest {
             Endpoint("/variable/test7", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     // PUT Tests
@@ -403,7 +413,7 @@ class SpoonWrapperTest {
         
         val expectedEndpoints = emptyList<Endpoint>()
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -418,7 +428,7 @@ class SpoonWrapperTest {
             Endpoint("/test-2", HttpMethod.PUT)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -433,7 +443,7 @@ class SpoonWrapperTest {
             Endpoint("/test-3", HttpMethod.PUT)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -448,7 +458,7 @@ class SpoonWrapperTest {
             Endpoint("/test-4", HttpMethod.PUT)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -463,7 +473,7 @@ class SpoonWrapperTest {
             Endpoint("/test-5", HttpMethod.PUT)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -478,7 +488,7 @@ class SpoonWrapperTest {
             Endpoint("/test-6", HttpMethod.PUT)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -493,7 +503,7 @@ class SpoonWrapperTest {
             Endpoint("/variable/test7", HttpMethod.PUT)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     // PATCH Tests
@@ -507,7 +517,7 @@ class SpoonWrapperTest {
         
         val expectedEndpoints = emptyList<Endpoint>()
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -522,7 +532,7 @@ class SpoonWrapperTest {
             Endpoint("/test-2", HttpMethod.PATCH)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -537,7 +547,7 @@ class SpoonWrapperTest {
             Endpoint("/test-3", HttpMethod.PATCH)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -552,7 +562,7 @@ class SpoonWrapperTest {
             Endpoint("/test-4", HttpMethod.PATCH)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -567,7 +577,7 @@ class SpoonWrapperTest {
             Endpoint("/test-5", HttpMethod.PATCH)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -582,7 +592,7 @@ class SpoonWrapperTest {
             Endpoint("/test-6", HttpMethod.PATCH)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -597,7 +607,7 @@ class SpoonWrapperTest {
             Endpoint("/variable/test7", HttpMethod.PATCH)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     // DELETE Tests
@@ -611,7 +621,7 @@ class SpoonWrapperTest {
         
         val expectedEndpoints = emptyList<Endpoint>()
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -626,7 +636,7 @@ class SpoonWrapperTest {
             Endpoint("/test-2", HttpMethod.DELETE)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -641,7 +651,7 @@ class SpoonWrapperTest {
             Endpoint("/test-3", HttpMethod.DELETE)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -656,7 +666,7 @@ class SpoonWrapperTest {
             Endpoint("/test-4", HttpMethod.DELETE)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -671,7 +681,7 @@ class SpoonWrapperTest {
             Endpoint("/test-5", HttpMethod.DELETE)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -686,7 +696,7 @@ class SpoonWrapperTest {
             Endpoint("/test-6", HttpMethod.DELETE)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -701,7 +711,7 @@ class SpoonWrapperTest {
             Endpoint("/variable/test7", HttpMethod.DELETE)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     // GET FOR OBJECT Tests
@@ -715,7 +725,7 @@ class SpoonWrapperTest {
         
         val expectedEndpoints = emptyList<Endpoint>()
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -730,7 +740,7 @@ class SpoonWrapperTest {
             Endpoint("/test-2", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -745,7 +755,7 @@ class SpoonWrapperTest {
             Endpoint("/test-3", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -760,7 +770,7 @@ class SpoonWrapperTest {
             Endpoint("/test-4", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -775,7 +785,7 @@ class SpoonWrapperTest {
             Endpoint("/test-5", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -790,7 +800,7 @@ class SpoonWrapperTest {
             Endpoint("/test-6", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -805,7 +815,7 @@ class SpoonWrapperTest {
             Endpoint("/variable/test7", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     // POST FOR OBJECT Tests
@@ -819,7 +829,7 @@ class SpoonWrapperTest {
         
         val expectedEndpoints = emptyList<Endpoint>()
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -834,7 +844,7 @@ class SpoonWrapperTest {
             Endpoint("/test-2", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -849,7 +859,7 @@ class SpoonWrapperTest {
             Endpoint("/test-3", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -864,7 +874,7 @@ class SpoonWrapperTest {
             Endpoint("/test-4", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -879,7 +889,7 @@ class SpoonWrapperTest {
             Endpoint("/test-5", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -894,7 +904,7 @@ class SpoonWrapperTest {
             Endpoint("/test-6", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -909,7 +919,7 @@ class SpoonWrapperTest {
             Endpoint("/variable/test7", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     // ========================
@@ -929,7 +939,7 @@ class SpoonWrapperTest {
             Endpoint("/v1/users", HttpMethod.GET)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -947,7 +957,7 @@ class SpoonWrapperTest {
             Endpoint("/v0.1/merchants/readers/delete", HttpMethod.DELETE)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 
     @Test
@@ -965,6 +975,49 @@ class SpoonWrapperTest {
             Endpoint("/v0.1/me/refund/tx123", HttpMethod.POST)
         )
 
-        assertEquals(expectedEndpoints, endpoints)
+        assertEndpointsEqual(expectedEndpoints, endpoints)
+    }
+
+    // ========================
+    // RestTemplate in local method Tests (Pattern: restTemplate().exchange())
+    // ========================
+
+    @Test
+    fun `15) RestTemplate in method - should detect RestTemplate created via method call`() {
+        val projectDir = Paths.get("$exchangePath/test15").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        // The URI is passed from Main, so we should detect the endpoint
+        val expectedEndpoints = listOf(
+            Endpoint("/v1/users", HttpMethod.GET)
+        )
+
+        assertEndpointsEqual(expectedEndpoints, endpoints)
+    }
+
+    // ========================
+    // Wrapper with method returning RestTemplate Tests
+    // ========================
+
+    @Test
+    fun `16) Wrapper with createRestTemplate method - should detect endpoints through wrapper with method-based RestTemplate`() {
+        val projectDir = Paths.get("$exchangePath/test16").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        // Should detect all endpoints passed through the LowLevelClient wrapper
+        val expectedEndpoints = listOf(
+            Endpoint("/groups", HttpMethod.GET),
+            Endpoint("/receivers", HttpMethod.POST),
+            Endpoint("/receivers", HttpMethod.PUT),
+            Endpoint("/receivers", HttpMethod.DELETE)
+        )
+
+        assertEndpointsEqual(expectedEndpoints, endpoints)
     }
 }

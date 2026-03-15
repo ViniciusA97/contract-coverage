@@ -17,5 +17,6 @@ data class CoverageData(
 
 data class EndpointData(
     val path: String,
-    val method: String
+    val method: String,
+    val sourceFile: String? = null
 )

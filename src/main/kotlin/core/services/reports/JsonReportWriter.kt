@@ -24,7 +24,8 @@ class JsonReportWriter : ReportWriter {
             endpoints = report.getEndpoints().map { endpoint ->
                 EndpointData(
                     path = endpoint.path,
-                    method = endpoint.method.value
+                    method = endpoint.method.value,
+                    sourceFile = endpoint.sourceFile
                 )
             },
             coverage = report.getCoverage()?.let { cov ->
@@ -32,8 +33,8 @@ class JsonReportWriter : ReportWriter {
                     totalCodeEndpoints = cov.totalCodeEndpoints,
                     matchedByPact = cov.matchedByPact,
                     coveragePercent = cov.coveragePercent,
-                    missingEndpoints = cov.missingEndpoints.map { EndpointData(it.path, it.method.value) },
-                    matchedEndpoints = cov.matchedEndpoints.map { EndpointData(it.path, it.method.value) }
+                    missingEndpoints = cov.missingEndpoints.map { EndpointData(it.path, it.method.value, it.sourceFile) },
+                    matchedEndpoints = cov.matchedEndpoints.map { EndpointData(it.path, it.method.value, it.sourceFile) }
                 )
             }
         )
