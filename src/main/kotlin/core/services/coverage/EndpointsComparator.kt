@@ -2,11 +2,19 @@ package org.example.core.services.coverage
 
 import org.example.core.entities.Endpoint
 import org.example.core.entities.Coverage
+import org.example.core.entities.UnresolvedMarkers
 import kotlin.math.round
 
 class EndpointsComparator {
     fun compare(codeEndpoints: List<Endpoint>, pactEndpoints: List<Endpoint>): Coverage {
-        val codeSet = codeEndpoints.distinctBy { it.path to it.method }.toSet()
+        // Deduplicate: for dynamic URLs, keep separate per sourceFile; for resolved URLs, dedupe by path+method
+        val codeSet = codeEndpoints.distinctBy { endpoint ->
+            if (UnresolvedMarkers.isUnresolved(endpoint.path)) {
+                Triple(endpoint.path, endpoint.method, endpoint.sourceFile)
+            } else {
+                Triple(endpoint.path, endpoint.method, null)
+            }
+        }.toSet()
         val pactSet = pactEndpoints.distinctBy { it.path to it.method }.toSet()
 
         val matched = mutableListOf<Endpoint>()
