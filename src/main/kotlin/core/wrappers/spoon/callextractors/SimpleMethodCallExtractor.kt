@@ -8,6 +8,7 @@ import org.example.core.wrappers.spoon.RestTemplateCallClassifier
 import org.example.core.wrappers.spoon.RootUriDetector
 import org.example.core.wrappers.spoon.SpoonExpressionResolver
 import org.example.core.entities.HttpMethod
+import org.example.core.wrappers.spoon.resolveSourceFile
 import spoon.reflect.CtModel
 import spoon.reflect.code.CtInvocation
 import spoon.reflect.declaration.CtClass
@@ -50,9 +51,7 @@ class SimpleMethodCallExtractor(
             path
         }
 
-        // Extract source file information
-        val sourceFile = call.position?.file?.name
-
+        val sourceFile = resolveSourceFile(call)
         return Endpoint(finalPath, httpMethod, sourceFile)
     }
     

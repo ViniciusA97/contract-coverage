@@ -1,87 +1,9 @@
 {
-  "timestamp" : "2026-03-15T13:55:11.702972642",
-  "totalEndpoints" : 19,
-  "endpoints" : [ {
-    "path" : "<dynamic-url>",
-    "method" : "GET",
-    "sourceFile" : "NominatimOSMGeocodingProviderImpl.java"
-  }, {
-    "path" : "<dynamic-url>",
-    "method" : "GET",
-    "sourceFile" : "PostgRESTClient.java"
-  }, {
-    "path" : "<dynamic-url>",
-    "method" : "GET",
-    "sourceFile" : "RestService.java"
-  }, {
-    "path" : "/v2/login",
-    "method" : "POST",
-    "sourceFile" : "CleverReachLowLevelClient.java"
-  }, {
-    "path" : "/v0.1/merchants/{dynamic}/readers",
-    "method" : "GET",
-    "sourceFile" : "SumUpClient.java"
-  }, {
-    "path" : "/v0.1/merchants/{dynamic}/readers",
-    "method" : "POST",
-    "sourceFile" : "SumUpClient.java"
-  }, {
-    "path" : "/v0.1/merchants/{dynamic}/readers/{dynamic}",
-    "method" : "DELETE",
-    "sourceFile" : "SumUpClient.java"
-  }, {
-    "path" : "/v0.1/merchants/{dynamic}/readers/{dynamic}/checkout",
-    "method" : "POST",
-    "sourceFile" : "SumUpClient.java"
-  }, {
-    "path" : "/v0.1/me/transactions",
-    "method" : "GET",
-    "sourceFile" : "SumUpClient.java"
-  }, {
-    "path" : "/v0.1/me/refund/{dynamic}",
-    "method" : "POST",
-    "sourceFile" : "SumUpClient.java"
-  }, {
-    "path" : "/ShipServer/{ID}/shipAdvises",
-    "method" : "POST",
-    "sourceFile" : "NShiftRestClient.java"
-  }, {
-    "path" : "/routing/request",
-    "method" : "POST",
-    "sourceFile" : "DerKurierClient.java"
-  }, {
-    "path" : "/parcel/de/account/auth/ropc/v1/token",
-    "method" : "POST",
-    "sourceFile" : "CustomOAuth2TokenRetriever.java"
-  }, {
-    "path" : "/parcel/de/shipping/v2/orders",
-    "method" : "POST",
-    "sourceFile" : "DhlShipperGatewayClient.java"
-  }, {
-    "path" : "<dynamic-url>",
-    "method" : "POST",
-    "sourceFile" : "CreditPassClient.java"
-  }, {
-    "path" : "<dynamic-url>",
-    "method" : "GET",
-    "sourceFile" : "SecurPharmClient.java"
-  }, {
-    "path" : "<dynamic-url>",
-    "method" : "PUT",
-    "sourceFile" : "SecurPharmClient.java"
-  }, {
-    "path" : "/auth/realms/testentity/protocol/openid-connect/token",
-    "method" : "POST",
-    "sourceFile" : "SecurPharmClientAuthenticator.java"
-  }, {
-    "path" : "/ShipServer/{ID}/Shipments",
-    "method" : "POST",
-    "sourceFile" : "NShiftShipmentService.java"
-  } ],
+  "timestamp" : "2026-03-21T12:10:29.360970984",
   "coverage" : {
-    "totalCodeEndpoints" : 19,
-    "matchedByPact" : 12,
-    "coveragePercent" : 63.16,
+    "totalEndpoints" : 35,
+    "matchedByPact" : 26,
+    "coveragePercent" : 74.29,
     "missingEndpoints" : [ {
       "path" : "<dynamic-url>",
       "method" : "GET",
@@ -107,9 +29,17 @@
       "method" : "PUT",
       "sourceFile" : "SecurPharmClient.java"
     }, {
-      "path" : "/ShipServer/{ID}/Shipments",
+      "path" : "<dynamic-url>",
       "method" : "POST",
-      "sourceFile" : "NShiftShipmentService.java"
+      "sourceFile" : "OAuthTokenManager.java"
+    }, {
+      "path" : "<dynamic-url>",
+      "method" : "PATCH",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "<dynamic-url>",
+      "method" : "POST",
+      "sourceFile" : "ShopwareClient.java"
     } ],
     "matchedEndpoints" : [ {
       "path" : "/v2/login",
@@ -140,7 +70,7 @@
       "method" : "POST",
       "sourceFile" : "SumUpClient.java"
     }, {
-      "path" : "/ShipServer/{ID}/shipAdvises",
+      "path" : "/ShipServer/{ID}/Shipments",
       "method" : "POST",
       "sourceFile" : "NShiftRestClient.java"
     }, {
@@ -159,6 +89,62 @@
       "path" : "/auth/realms/testentity/protocol/openid-connect/token",
       "method" : "POST",
       "sourceFile" : "SecurPharmClientAuthenticator.java"
+    }, {
+      "path" : "/api/order-address/{dynamic}",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/order/{dynamic}/deliveries",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/country/{dynamic}",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/order/{dynamic}/line-items",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/order/{dynamic}/transactions",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/payment-method/{dynamic}",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/currency",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/salutation",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/customer/{dynamic}/group",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/unit",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/search/customer",
+      "method" : "POST",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/customer-group/{dynamic}",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/api/customer-address/{dynamic}",
+      "method" : "GET",
+      "sourceFile" : "ShopwareClient.java"
+    }, {
+      "path" : "/ShipServer/{ID}/shipAdvises",
+      "method" : "POST",
+      "sourceFile" : "NShiftShipAdvisorService.java"
     } ]
   }
 }

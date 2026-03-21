@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import org.example.core.entities.EndpointData
-import org.example.core.entities.Coverage
 import org.example.core.entities.CoverageData
 import org.example.core.entities.Report
 import org.example.core.entities.ReportData
@@ -20,17 +19,9 @@ class JsonReportWriter : ReportWriter {
     override fun writeReport(report: Report, reportOutput: String) {
         val reportData = ReportData(
             timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-            totalEndpoints = report.getEndpointCount(),
-            endpoints = report.getEndpoints().map { endpoint ->
-                EndpointData(
-                    path = endpoint.path,
-                    method = endpoint.method.value,
-                    sourceFile = endpoint.sourceFile
-                )
-            },
             coverage = report.getCoverage()?.let { cov ->
                 CoverageData(
-                    totalCodeEndpoints = cov.totalCodeEndpoints,
+                    totalEndpoints = cov.totalCodeEndpoints,
                     matchedByPact = cov.matchedByPact,
                     coveragePercent = cov.coveragePercent,
                     missingEndpoints = cov.missingEndpoints.map { EndpointData(it.path, it.method.value, it.sourceFile) },
