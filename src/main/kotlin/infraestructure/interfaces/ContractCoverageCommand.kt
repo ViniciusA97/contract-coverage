@@ -1,7 +1,6 @@
 package org.example.infraestructure.interfaces
 
 import org.example.ContractCoverageApp
-import org.example.core.entities.UnresolvedMarkers
 import org.example.core.services.reports.JsonReportWriter
 import org.example.core.wrappers.spoon.SpoonWrapper
 import picocli.CommandLine
@@ -71,18 +70,18 @@ class ContractCoverageCommand : Callable<Int> {
             val app = ContractCoverageApp(analyzer, reportWriter)
 
             val coverage = app.run(outputPath, pactPath)
-
+            
+            // Count total Java files in project
+            val totalProjectFiles = countJavaFiles(File(codePath))
+            
             // Log coverage information
             println("Coverage: ${String.format("%.2f", coverage.coveragePercent)}%")
             println("Total endpoints: ${coverage.totalCodeEndpoints}")
-            println("Matched: ${coverage.matchedByPact}")
-            println("Missing: ${coverage.totalCodeEndpoints - coverage.matchedByPact}")
+            println("  - Matched: ${coverage.matchedByPact}")
+            println("  - Missing: ${coverage.missingEndpoints.size}")
             println()
-            
-            // Separate resolved and unresolved endpoints
-            val (unresolvedEndpoints, resolvedMissing) = coverage.missingEndpoints.partition { 
-                UnresolvedMarkers.isPathUnresolved(it.path) 
-            }
+            println("Project files: $totalProjectFiles")
+            println()
             
             // Log matched endpoints
             if (coverage.matchedEndpoints.isNotEmpty()) {
@@ -94,22 +93,12 @@ class ContractCoverageCommand : Callable<Int> {
                 println()
             }
             
-            // Log missing endpoints (resolved URLs only)
-            if (resolvedMissing.isNotEmpty()) {
+            // Log missing endpoints
+            if (coverage.missingEndpoints.isNotEmpty()) {
                 println("Missing endpoints:")
-                resolvedMissing.forEach { endpoint ->
+                coverage.missingEndpoints.forEach { endpoint ->
                     val source = endpoint.sourceFile?.let { " ($it)" } ?: ""
                     println("  ✗ ${endpoint.method.value} ${endpoint.path}$source")
-                }
-                println()
-            }
-            
-            // Log unresolved endpoints (dynamic URLs)
-            if (unresolvedEndpoints.isNotEmpty()) {
-                println(yellow("Unresolved endpoints (dynamic URLs - cannot be analyzed statically):"))
-                unresolvedEndpoints.forEach { endpoint ->
-                    val source = endpoint.sourceFile?.let { " ($it)" } ?: ""
-                    println("  ⚠ ${endpoint.method.value} ${endpoint.path}$source")
                 }
                 println()
             }
@@ -234,16 +223,12 @@ class ContractCoverageCommand : Callable<Int> {
         }
     }
 
-    private fun yellow(text: String): String {
-        // Check if we're in a terminal that supports colors
-        val isTerminal = System.console() != null || 
-                        System.getenv("TERM") != null ||
-                        System.getProperty("java.class.path", "").contains("gradle")
+    private fun countJavaFiles(directory: File): Int {
+        if (!directory.exists() || !directory.isDirectory) return 0
         
-        return if (isTerminal && System.getProperty("NO_COLOR", "").isEmpty()) {
-            "\u001B[33m$text\u001B[0m"  // ANSI yellow
-        } else {
-            text  // No color if not in terminal or NO_COLOR is set
-        }
+        return directory.walkTopDown()
+            .filter { it.isFile && it.extension == "java" }
+            .filter { !it.path.contains("/test/") && !it.path.contains("\\test\\") }
+            .count()
     }
 }

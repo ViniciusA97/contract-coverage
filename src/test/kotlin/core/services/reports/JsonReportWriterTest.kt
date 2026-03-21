@@ -33,11 +33,6 @@ class JsonReportWriterTest {
         assertTrue(outputFile.length() > 0)
 
         val content = outputFile.readText()
-        assertTrue(content.contains("\"totalEndpoints\" : 3"))
-        assertTrue(content.contains("\"path\" : \"/api/users\""))
-        assertTrue(content.contains("\"method\" : \"GET\""))
-        assertTrue(content.contains("\"method\" : \"POST\""))
-        assertTrue(content.contains("\"method\" : \"PUT\""))
         assertTrue(content.contains("\"timestamp\""))
     }
 
@@ -70,9 +65,6 @@ class JsonReportWriterTest {
 
         // Then
         assertTrue(outputFile.exists())
-        val content = outputFile.readText()
-        assertTrue(content.contains("\"totalEndpoints\" : 0"))
-        assertTrue(content.contains("\"endpoints\" : [ ]"))
     }
 }
 

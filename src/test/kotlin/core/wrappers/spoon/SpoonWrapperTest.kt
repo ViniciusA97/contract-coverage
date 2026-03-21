@@ -1020,4 +1020,46 @@ class SpoonWrapperTest {
 
         assertEndpointsEqual(expectedEndpoints, endpoints)
     }
+
+    // ========================
+    // Builder pattern with parameter tracing Tests
+    // ========================
+
+    @Test
+    fun `17) Builder pattern - complex builder object as parameter is marked as dynamic`() {
+        val projectDir = Paths.get("$exchangePath/test17").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        // Complex builder patterns like GetRequest.builder().baseURL().pathVariables().build()
+        // passed as a parameter to a method that calls getBaseURL() and getPathVariables()
+        // are too complex for static analysis - they are marked as dynamic
+        // The URL is constructed from getRequest.getBaseURL() and getRequest.getPathVariables()
+        // which require deep builder tracing across method calls
+        val expectedEndpoints = listOf(
+            Endpoint("<dynamic-url>", HttpMethod.GET)
+        )
+
+        assertEndpointsEqual(expectedEndpoints, endpoints)
+    }
+
+    @Test
+    fun `18) UriComponentsBuilder with path parameter - should resolve base URL and path from parameter`() {
+        val projectDir = Paths.get("$exchangePath/test18").toAbsolutePath().toString()
+
+        val spoonWrapper = SpoonWrapper(projectDir)
+
+        val endpoints: List<Endpoint> = spoonWrapper.analyzeInvocations()
+
+        // BASE_URL is constant, path comes from callers
+        // Should detect: /users (from getUsers) and /users/{dynamic} (from getUser with concatenation)
+        val expectedEndpoints = listOf(
+            Endpoint("/users", HttpMethod.GET),
+            Endpoint("/users/{dynamic}", HttpMethod.GET)
+        )
+
+        assertEndpointsEqual(expectedEndpoints, endpoints)
+    }
 }

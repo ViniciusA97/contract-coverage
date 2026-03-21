@@ -33,13 +33,13 @@ class EndpointsComparator {
             }
         }
 
-        val total = codeSet.size
+        val totalEndpoints = matched.size + missing.size
         val matchedCount = matched.size
-        val coverage = if (total == 0) 100.0 else (matchedCount.toDouble() / total.toDouble()) * 100.0
+        val coverage = if (totalEndpoints == 0) 100.0 else (matchedCount.toDouble() / totalEndpoints.toDouble()) * 100.0
         val coverageRounded = round(coverage * 100.0) / 100.0
 
         return Coverage(
-            totalCodeEndpoints = total,
+            totalCodeEndpoints = totalEndpoints,
             matchedByPact = matchedCount,
             coveragePercent = coverageRounded,
             missingEndpoints = missing,

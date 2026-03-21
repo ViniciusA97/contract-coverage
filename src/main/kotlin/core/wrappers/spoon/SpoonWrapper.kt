@@ -274,8 +274,7 @@ class SpoonWrapper(
                         // Only add valid paths (must start with / or be a full URL)
                         if (!UnresolvedMarkers.isPathUnresolved(path) && 
                             (path.startsWith("/") || path.contains("://"))) {
-                            // Extract source file from call site
-                            val sourceFile = callSite.position?.file?.name
+                            val sourceFile = resolveSourceFile(callSite)
                             endpoints.add(Endpoint(path, httpMethod, sourceFile))
                         }
                     }
